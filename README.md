@@ -1,4 +1,4 @@
-# communicatio
+# Communicatio
 Recoded Version of VKS
 - Features Bootstrap 4 with redisign of full site
 - Have instead of json mixed with sqlalchemy only flask sqlalchemy 
