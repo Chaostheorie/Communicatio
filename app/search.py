@@ -1,5 +1,4 @@
-from app import *
-from models import *
+from app import app, models, db
 
 def add_to_index(index, model):
     with app.app_context():

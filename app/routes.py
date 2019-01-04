@@ -1,12 +1,9 @@
 from flask import *
 from app import app
-from app.forms import LoginForm
+from flask_user import *
 
 @app.route("/")
-def r_log_in():
-    return redirect("/log-in")
-
-@app.route("index", methods=["POST", "GET"])
+@login_required
 def index():
     if request.method == "GET":
         return render_template("index.html")
@@ -15,11 +12,20 @@ def index():
         # add search answer with search mixin
         return ""
 
-@app.route('/log-in', methods=['GET', 'POST'])
-def login():
-    form = LoginForm()
-    if form.validate_on_submit():
-        flash('Login requested for user {}, remember_me={}'.format(
-            form.username.data, form.remember_me.data))
-        return redirect(url_for('index'))
-    return render_template('login.html',  title='Sign In', form=form)
+# for later migration and not for url_for("link")
+@app.route("/about-us")
+def about_us():
+    return ""
+
+@app.route("/info")
+def Info():
+    return ""
+
+@app.route("/all_entrys")
+def all_entrys():
+    return ""
+# Signal for logging if user logged in
+@user_logged_in.connect_via(app)
+def _after_login_hook(sender, user, **extra):
+    flash(user.username + " logged in")
+    return ""
