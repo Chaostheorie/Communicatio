@@ -8,7 +8,8 @@ def add_to_index(index, model):
         for field in model.__searchable__:
             payload[field] = getattr(model, field)
         current_app.elasticsearch.index(index=index, doc_type=index, id=model.id, body=payload)
-# Just for the case a thing is not longer supported
+        
+# Just for the case a index entry will be removed
 def remove_from_index(index, model):
     with app.app_context():
         if not current_app.elasticsearch:
@@ -21,7 +22,7 @@ def query_index(index, query, page, per_page):
             return [], 0
         search = current_app.elasticsearch.search(
             index=index, doc_type=index,
-            body={'query': {'multi_match': {'query': query, 'fields': ['*']}},
-                'from': (page - 1) * per_page, 'size': per_page})
-        ids = [int(hit['_id']) for hit in search['hits']['hits']]
-        return ids, search['hits']['total']
+            body={"query": {"multi_match": {"query": query, "fields": ["*"]}},
+                "from": (page - 1) * per_page, "size": per_page})
+        ids = [int(hit["_id"]) for hit in search["hits"]["hits"]]
+        return ids, search["hits"]["total"]

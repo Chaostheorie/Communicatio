@@ -27,7 +27,7 @@
               <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                 <a class="dropdown-item" href="{{ url_for("all_entrys") }}"> Alle </a>
                 <div class="dropdown-item">
-                  <form class="form-inline my-2 my-lg-0" action="/" method="post">
+                  <form class="form-inline my-2 my-lg-0" method="post">
                       <input class="form-control mr-sm-2" type="search" placeholder="Suche" aria-label="Suche" name="search">
                       <button class="btn btn-outline-success my-2 my-sm-0" type="submit"> Los</button>
                       <input type="hidden" id="type" name="type" value="broadcast">
@@ -37,14 +37,14 @@
             </li>
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle deactivated" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          Lehrer
+          Termine
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-          <a class="dropdown-item" href="{{ url_for("Info")}} "> Info </a>
+          <a class="dropdown-item" href="{{ url_for("all_terms")}} "> Alle </a>
           <div class="dropdown-item">
-            <form class="form-inline my-2 my-lg-0" action="/" method="post">
+            <form class="form-inline my-2 my-lg-0" method="post">
                 <input class="form-control mr-sm-2" type="search" placeholder="Suche" aria-label="Suche" name="search">
-                <input type="hidden" id="type" name="type" value="snippet">
+                <input type="hidden" id="type" name="type" value="term">
                 <button class="btn btn-outline-success my-2 my-sm-0" type="submit"> Los</button>
             </form>
           </div>
