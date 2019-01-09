@@ -1,8 +1,9 @@
 from flask import *
 from app import app, search, db, db_session
 from app.mixin import *
-from app.models import entrys, terms
+from app.models import *
 from flask_user import *
+from flask_sqlalchemy import *
 
 # this function is for form Processing
 def make_dict(request):
@@ -24,14 +25,44 @@ def index():
     if request.method == "POST":
         return search_results(request, search)
 
+@app.route("/admin")
+@roles_required("Admin")
+def admin():
+    return render_template("admin.html")
+
+@app.route("/add-user", methods=["POST", "GET"])
+@roles_required("Admin")
+def add_user():
+    if request.method == "GET":
+        roles_all = Role.query.order_by(Role.name).all()
+        return render_template("add_user.html", roles=roles_all)
+
+    if request.method == "POST":
+        user_data = make_dict(request)
+        user = Users(
+        username=user_data["username"],
+        password=user_manager.hash_password(user_data["password"]),
+        first_name=user_data["first_name"],
+        last_name=user_data["last_name"],
+        )
+        print(user.username)
+        return redirect("/add-user")
+
+@app.route("/add-term", methods=["POST", "GET"])
+@roles_required("Admin")
+def add_term():
+    if request.method == "GET":
+        return render_template("add_term.html")
+
+    if request.method == "POST":
+        new_term = make_dict(request)
+        print(new_term)
+        return redirect("/add-term")
+
 @app.route("/results")
 def search_results(request, search):
     input = make_dict(request)
     text = ""
-    # debuging prints fot input checking
-    print("Search started")
-    print(input)
-    print(search)
     if input["type"]=="broadcast":
         entrys.reindex()
         results = query, total = entrys.search(input["search"], 1, 100)
@@ -48,7 +79,6 @@ def search_results(request, search):
 
     if input["type"]=="term":
         results = query, total = terms.search(input["search"], 1, 100)
-        print("query working")
         if input["search"] == "":
                 qry = db_session.query(terms)
                 results = qry.all()
@@ -79,24 +109,23 @@ def search_results(request, search):
 # for later implementation and allowing url_for(*) to work
 @app.route("/about-us")
 def about_us():
-    # must later be used to create terms index for elasticsearch after that
-    # could deleted and is replaced in search already with reindex
-    for term in terms.query.all():
-        add_to_index("terms", term)
-        flash("added terms")
-    flash("Peng")
+    flash("Not Created yet")
     return redirect("/")
 
 @app.route("/all_terms")
 def all_terms():
-    return ""
+    all = terms.query.all()
+    text = "Alle Termine:"
+    peter = User.query.filter_by(id=1).all()
+    return render_template("terms_results.html", results=all, text=text)
 
 @app.route("/all_entrys")
 def all_entrys():
-    return ""
+    all = entrys.query.all()
+    text = "Alle Einträge:"
+    return render_template("results.html", results=all, text=text)#
 
-# Signal if user logged in
-# this could later be used for username request or sth like this
+# Signal if user logged in by flask_user
 @user_logged_in.connect_via(app)
 def _after_login_hook(sender, user, **extra):
     flash(user.username + " logged in")

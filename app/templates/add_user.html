@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<p>
+  <form action="add-user" method="post">
+  <div class="form-group">
+    <input type="username" class="form-control required" id="username" placeholder="Username">
+  </div>
+    <div class="form-row">
+      <div class="col">
+        <input type="text" class="form-control" placeholder="First name" id="first_name" name="first_name">
+      </div>
+      <div class="col">
+        <input type="text" class="form-control" placeholder="Last name" id="last_name" name="last_name">
+      </div>
+  </div>
+  <div class="form-group">
+    <label for="roles">Roles:</label>
+    <select multiple class="form-control" id="roles">
+      {% for role in roles %}
+      <option>{{ role.name }}</option>
+      {% endfor %}
+    </select>
+
+  </div>
+
+  <button type="submit" class="btn btn-primary">Add User</button>
+  </form>
+{% endblock %}
