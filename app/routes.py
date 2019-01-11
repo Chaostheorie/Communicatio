@@ -1,9 +1,24 @@
 from flask import *
-from app import app, search, db, db_session
+from app import *
 from app.mixin import *
 from app.models import *
 from flask_user import *
 from flask_sqlalchemy import *
+
+#setup user manager
+user_manager = UserManager(app, db, Users)
+
+# add admin for testing if not added yet
+if not Users.query.filter(Users.username == "admin").first():
+	user = Users(
+		username = "admin",
+		password = user_manager.hash_password("Password1"),
+		first_name = "Chaostheorie",
+		last_name = "https://github.com/Chaostheorie"
+    )
+	user.roles = [admin_role,]
+	db_session.add(user)
+	db_session.commit()
 
 # this function is for form Processing
 def make_dict(request):
@@ -39,13 +54,25 @@ def add_user():
 
     if request.method == "POST":
         user_data = make_dict(request)
+        values = list(request.form.values())
+        keys = list(request.form.keys())
+        input = {}
+        for i in range(len(keys)):
+            value = values[i]
+            key = keys[i]
+            input.update({key:value})
         user = Users(
         username=user_data["username"],
         password=user_manager.hash_password(user_data["password"]),
         first_name=user_data["first_name"],
         last_name=user_data["last_name"],
         )
-        print(user.username)
+        # add role with variant of models and a for loop
+        print("Peng")
+        print(user_data["roles"])
+        #	user.roles = [admin_role,]
+        #db.session.add(user)
+        #db.session.commit()
         return redirect("/add-user")
 
 @app.route("/add-term", methods=["POST", "GET"])
@@ -125,8 +152,14 @@ def all_entrys():
     text = "Alle Einträge:"
     return render_template("results.html", results=all, text=text)#
 
-# Signal if user logged in by flask_user
+# Signals form flask user
 @user_logged_in.connect_via(app)
 def _after_login_hook(sender, user, **extra):
     flash(user.username + " logged in")
+    return ""
+
+@user_logged_in.connect_via(app)
+def _track_logins(sender, user, **extra):
+    #user.last_login_ip = request.remote_addr
+    #db.session.commit()
     return ""

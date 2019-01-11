@@ -66,20 +66,7 @@ class terms(db.Model, SearchableMixin):
 # init of tabels
 db.create_all()
 
-# Setup Flask-User and specify the User data-model
-user_manager = UserManager(app, db, Users)
 
 # Init Static User, if there are not created before
-admin_role = Role(name='Admin')
+admin_role = Role(name="Admin")
 db.session.commit()
-
-if not Users.query.filter(Users.username == "admin").first():
-	user = Users(
-		username = "admin",
-		password = user_manager.hash_password("Password1"),
-		first_name = "Chaostheorie",
-		last_name = "https://github.com/Chaostheorie"
-    )
-	user.roles = [admin_role,]
-	db_session.add(user)
-	db_session.commit()

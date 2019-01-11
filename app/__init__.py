@@ -5,6 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from elasticsearch import Elasticsearch
+from flask_user import UserManager
 
 # Init Flask
 app = Flask(__name__)
@@ -22,5 +23,10 @@ engine = create_engine('sqlite:///app/static/database/VKS_main.sqlite', \
 db_session = scoped_session(sessionmaker(autocommit=True,
                                          autoflush=False,
                                          bind=engine))
+import log
+from app import models, search, mixin
+from app.models import Users
 
-from app import routes, models, search, mixin
+# Setup Flask-User and specify the User data-model
+
+from app import routes
