@@ -10,15 +10,15 @@ user_manager = UserManager(app, db, Users)
 
 # add admin for testing if not added yet
 if not Users.query.filter(Users.username == "admin").first():
-	user = Users(
-		username = "admin",
-		password = user_manager.hash_password("Password1"),
-		first_name = "Chaostheorie",
-		last_name = "https://github.com/Chaostheorie"
+    user = Users(
+        username = "admin",
+        password = user_manager.hash_password("Password1"),
+        first_name = "Chaostheorie",
+        last_name = "https://github.com/Chaostheorie"
     )
-	user.roles = [admin_role,]
-	db_session.add(user)
-	db_session.commit()
+    user.roles.append(Roles(name="Admin"))
+    db.session.add(user)
+    db.session.commit()
 
 # this function is for form Processing
 def make_dict(request):
@@ -49,30 +49,24 @@ def admin():
 @roles_required("Admin")
 def add_user():
     if request.method == "GET":
-        roles_all = Role.query.order_by(Role.name).all()
+        roles_all = Roles.query.order_by(Roles.name).all()
         return render_template("add_user.html", roles=roles_all)
 
     if request.method == "POST":
-        user_data = make_dict(request)
-        values = list(request.form.values())
-        keys = list(request.form.keys())
-        input = {}
-        for i in range(len(keys)):
-            value = values[i]
-            key = keys[i]
-            input.update({key:value})
-        user = Users(
-        username=user_data["username"],
-        password=user_manager.hash_password(user_data["password"]),
-        first_name=user_data["first_name"],
-        last_name=user_data["last_name"],
+        multiselect = request.form.getlist("roles")
+        print(multiselect)
+        user1 = Users(
+        username = request.form["username"],
+        password = user_manager.hash_password(request.form["password"]),
+        first_name = request.form["first_name"],
+        last_name = request.form["last_name"],
         )
-        # add role with variant of models and a for loop
-        print("Peng")
-        print(user_data["roles"])
-        #	user.roles = [admin_role,]
-        #db.session.add(user)
-        #db.session.commit()
+        for i in range(len(multiselect)):
+            user1.roles.append(Roles(name=multiselect[i]))
+            print(str(i) + ": " + multiselect[i])
+        db.session.add(user1)
+        db.session.commit()
+        flash("Add username: " + request.form["username"] + " sucessfully")
         return redirect("/add-user")
 
 @app.route("/add-term", methods=["POST", "GET"])
@@ -143,7 +137,6 @@ def about_us():
 def all_terms():
     all = terms.query.all()
     text = "Alle Termine:"
-    peter = User.query.filter_by(id=1).all()
     return render_template("terms_results.html", results=all, text=text)
 
 @app.route("/all_entrys")

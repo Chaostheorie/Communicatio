@@ -21,7 +21,7 @@
     <label for="roles">Roles:</label>
     <select multiple class="form-control" id="roles" name="roles" multiple>
       {% for role in roles %}
-      <option>{{ role.name }}</option>
+      <option value="{{ role.name }}" >{{ role.name }}</option>
       {% endfor %}
     </select>
 

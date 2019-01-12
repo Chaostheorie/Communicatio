@@ -1,0 +1,50 @@
+# Init Static Roles nedd a check if already in the db
+admin_role = Role(
+name = "Admin",
+processing_name="admin_role"
+)
+db.session.add(admin_role)
+
+backend_developer_role = Role(
+name = "backend_developer",
+processing_name = "backend_developer_role"
+)
+db.session.add(backend_developer_role)
+
+frontend_developer_role = Role(
+name = "frontend_developer",
+processing_name = "frontend_developer_role"
+)
+db.session.add(frontend_developer_role)
+
+author_role = Role(
+name = "author",
+processing_name = "author_role"
+)
+db.session.add(author_role)
+
+supporter_role = Role(
+name = "supporter",
+processing_name = "supporter_role"
+)
+db.session.add(supporter_role)
+
+user_role = Role(
+name = "user",
+processing_name = "user_role"
+)
+db.session.add(user_role)
+
+senior_role = Role(
+name = "senior",
+processing_name = "senior_role"
+)
+db.session.add(senior_role)
+
+developer_role = Role(
+name = "developer",
+processing_name = "developer_role"
+)
+db.session.add(developer_role)
+
+db.session.commit()
