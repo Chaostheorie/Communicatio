@@ -6,6 +6,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from elasticsearch import Elasticsearch
 from flask_user import UserManager
+from flask_babelex import Babel
 
 # Init Flask
 app = Flask(__name__)
@@ -23,7 +24,9 @@ engine = create_engine('sqlite:///app/static/database/VKS_main.sqlite', \
 db_session = scoped_session(sessionmaker(autocommit=True,
                                          autoflush=False,
                                          bind=engine))
-import log
+# Initialize Flask-BabelEx
+babel = Babel(app)
+
 from app import models, search, mixin
 from app.models import Users
 

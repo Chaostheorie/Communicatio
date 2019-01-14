@@ -118,7 +118,6 @@ def search_results(request, search):
         text = "Es wurde 1 Ergebniss für den Suchbegriff " + input["search"] + \
          " gefunden:"
     elif not results:
-        print("Pong")
         return redirect("/")
     else:
         flash("Kein Ergebniss für den Suchbegriff " + str(input["search"]) + \
