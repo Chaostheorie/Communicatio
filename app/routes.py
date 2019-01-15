@@ -85,6 +85,7 @@ def search_results(request, search):
     input = make_dict(request)
     text = ""
     if input["type"]=="broadcast":
+        result_type = input["type"] or ""
         entrys.reindex()
         results = query, total = entrys.search(input["search"], 1, 100)
         if input["search"] == "":
@@ -94,12 +95,13 @@ def search_results(request, search):
                     text = " Es wurden " + str(len(entrys.query.all())) + \
                      " Ergebnisse gefunden:"
                 else:
-                    text = "Es wurde" + str(len(entrys.query.all())) + \
+                    text = "Es wurde " + str(len(entrys.query.all())) + \
                      " Ergebniss gefunden: "
-                return render_template("results.html", results=results, text=text)
+                return render_template("results.html", results=results, text=text, result_type=result_type)
 
     if input["type"]=="term":
         results = query, total = terms.search(input["search"], 1, 100)
+        result_type = input["type"] or ""
         if input["search"] == "":
                 qry = db_session.query(terms)
                 results = qry.all()
@@ -107,9 +109,9 @@ def search_results(request, search):
                     text = " Es wurden " + str(len(terms.query.all())) + \
                      " Ergebnisse gefunden:"
                 else:
-                    text = "Es wurde" + str(len(terms.query.all())) + \
+                    text = "Es wurde " + str(len(terms.query.all())) + \
                      " Ergebniss gefunden: "
-                return render_template("results.html", results=results, text=text)
+                return render_template("results.html", results=results, text=text, result_type=result_type)
 
     if results[1] > 1:
         text = "Es wurden " + str(total) + " Ergebnisse für den Suchbegriff " +\
@@ -118,6 +120,7 @@ def search_results(request, search):
         text = "Es wurde 1 Ergebniss für den Suchbegriff " + input["search"] + \
          " gefunden:"
     elif not results:
+        flash("Database Failure 01 - no FTS index")
         return redirect("/")
     else:
         flash("Kein Ergebniss für den Suchbegriff " + str(input["search"]) + \
@@ -130,8 +133,8 @@ def search_results(request, search):
 @app.route("/about-us")
 def about_us():
     flash("Not Created yet")
-    return redirect("/")
-
+    return_url = request.referrer or "/"
+    return redirect(return_url)
 @app.route("/all_terms")
 def all_terms():
     all = terms.query.all()

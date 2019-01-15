@@ -48,11 +48,11 @@ class entrys(db.Model, SearchableMixin):
 	__tablename__ = "entrys"
 	__searchable__ = ["name", "content"]
 	id = db.Column(db.Integer(), primary_key=True, unique=True)
-	name = db.Column(db.String(150))
+	name = db.Column(db.String(150), server_default="")
 	author_id = db.Column(db.Integer(), db.ForeignKey("users.id", ondelete="CASCADE"))
-	creation_date = db.Column(db.String(20))
-	creation_time = db.Column(db.String(20))
-	content = db.Column(db.String(150))
+	creation_date = db.Column(db.String(20), server_default="")
+	creation_time = db.Column(db.String(20), server_default="")
+	content = db.Column(db.String(150), server_default="")
 
 # Define the Term Model with custom SearchableMixin
 # creation date/ time are only for full view
@@ -63,10 +63,10 @@ class terms(db.Model, SearchableMixin):
 	name = db.Column(db.String(150))
 	# author is only for traceability
 	author_id = db.Column(db.Integer(), db.ForeignKey("users.id", ondelete="CASCADE"))
-	creation_date = db.Column(db.String(20))
-	creation_time = db.Column(db.String(20))
-	destination_day = db.Column(db.String(20))
-	description = db.Column(db.String(150))
+	creation_date = db.Column(db.String(20), server_default="")
+	creation_time = db.Column(db.String(20), server_default="")
+	destination_day = db.Column(db.String(20), server_default="")
+	description = db.Column(db.String(150), server_default="")
 
 # init of tabels
 db.create_all()

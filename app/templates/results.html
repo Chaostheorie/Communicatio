@@ -1,33 +1,53 @@
 {% extends "base.html" %}
 {% block app_content %}
-
+    {% if result_type=="term" or "broadcast" %}
     <p>
       {{ text }}
     </p>
-    <p>
-      <table class="table">
-        <thead class="thead-dark">
-          <tr>
-            <th scope="col">Name</th>
-            <th scope="col">Art</th>
-            <th scope="col">Ihnalt</th>
-            <th scope="col">Beschreibung</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for result in results %}
-        <tr>
-          <td> {{ result.name }} </td>
-          <td> {{ result.type }} </td>
-          <td> {{ result.content }} </td>
-            {% if result.description == None %}
-              <td> Nicht Vorhanden </td>
-            {% else %}
-              <td> {{ result.description }} </td>
-            {% endif %}
-        </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+    {% elif result_type=="" %}
+      <p>
+        <div class="alert alert-danger" role="alert">
+          <strong>Error 01:</strong> Bad request type for search
+        </div>
       </p>
+    {% endif %}
+      <table class="table">
+          {% if result_type=="term" %}
+          <thead class="thead-dark">
+            <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Tag</th>
+              <th scope="col">Beschreibung</th>
+            </tr>
+            </thead>
+            {% for result in results %}
+            <tbody>
+              <tr>
+                <td scope="row">{{ result.name }}</td>
+                <td>{{ result.destination_day }}</td>
+                {% if result.description == None %}
+                  <td> Nicht Vorhanden </td>
+                {% else %}
+                  <td> {{ result.description }} </td>
+                {% endif %}
+                </tr>
+            </tbody>
+            {% endfor %}
+          {% elif result_type=="broadcast" %}
+          <thead class="thead-dark">
+            <th scope="col">Name</th>
+            <th scope="col">Ersteller</th>
+            <th scope="col">Ihnalt</th>
+          </thead>
+            {% for result in results %}
+            <tbody>
+              <tr>
+                <td scope="row"> {{ result.name }} </td>
+                <td> Noch nicht implementiert </td>
+                <td> {{ result.content }} </td>
+              </tr>
+            </tbody>
+            {% endfor %}
+          {% endif %}
+      </table>
 {% endblock %}
