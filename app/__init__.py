@@ -33,3 +33,5 @@ from app.models import Users
 # Setup Flask-User and specify the User data-model
 
 from app import routes
+
+print("sucessfully Initialized")

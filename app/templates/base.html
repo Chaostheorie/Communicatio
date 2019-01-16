@@ -7,9 +7,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="static/custom-style.css">
-  {{ moment.include_jquery() }}
-  {{ moment.include_moment() }}
-  {{ moment.lang("es") }}
 {% endblock %}
 
 {% block navbar %}
@@ -23,7 +20,7 @@
       <li class="nav-item">
         <a class="nav-link" href="/">Start <span class="sr-only">(current)</span></a>
       </li>
-            <li class="nav-item dropdown deactivated">
+            <li class="nav-item dropdown disabled">
               <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 Neuigkeiten
               </a>
@@ -39,7 +36,7 @@
               </div>
             </li>
       <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle deactivated" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           Termine
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
@@ -54,20 +51,23 @@
         </div>
       </li>
       <li class="nav-item">
-      <a class="nav-link" href="{{ url_for("about_us") }}" >About Us</a>
+      <a class="nav-link disabled" href="{{ url_for("about_us") }}" >About Us</a>
       </li>
     </ul>
     <ul class="navbar-nav navbar-right">
       <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle deactivated" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           Profil
         </a>
         <div class="dropdown-menu dropdown-menu-left dropdown-left-manual" aria-labelledby="navbarDropdown">
           <div class="dropdown-item">
-            <a class="nav-link deactivated" href="#" >Einstellungen</a>
+            <a class="nav-link disabled" href="#" >Einstellungen</a>
           </div>
           <div class="dropdown-item">
-            <a class="nav-link deactivated" href="#" >Info</a>
+            <a class="nav-link disabled" href="#" >Info</a>
+          </div>
+          <div class="dropdown-item">
+            <a class="nav-link" href={{ url_for('user.logout') }}>Sign out</a>
           </div>
         </div>
       </li>

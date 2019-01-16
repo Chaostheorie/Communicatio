@@ -4,6 +4,7 @@ from app.mixin import *
 from app.models import *
 from flask_user import *
 from flask_sqlalchemy import *
+import time
 
 #setup user manager
 user_manager = UserManager(app, db, Users)
@@ -38,7 +39,9 @@ def index():
         return render_template("index.html")
 
     if request.method == "POST":
-        return search_results(request, search)
+        type = "specific"
+        spdict = ""
+        return search_results(request, type, spdict)
 
 @app.route("/admin")
 @roles_required("Admin")
@@ -81,8 +84,15 @@ def add_term():
         return redirect("/add-term")
 
 @app.route("/results")
-def search_results(request, search):
-    input = make_dict(request)
+def search_results(request, type, spdict):
+    if type == "specific":
+        input = make_dict(request)
+    elif type == "nonspecific":
+        input = spdict
+    else:
+        flash("Error 02: Bad request")
+        return redirect("/")
+    print(input)
     text = ""
     if input["type"]=="broadcast":
         result_type = input["type"] or ""
@@ -135,17 +145,20 @@ def about_us():
     flash("Not Created yet")
     return_url = request.referrer or "/"
     return redirect(return_url)
+
 @app.route("/all_terms")
 def all_terms():
-    all = terms.query.all()
-    text = "Alle Termine:"
-    return render_template("terms_results.html", results=all, text=text)
+    request = ""
+    spdict = {'search': '', 'type': 'term'}
+    type = "nonspecific"
+    return search_results(request, type, spdict)
 
 @app.route("/all_entrys")
 def all_entrys():
-    all = entrys.query.all()
-    text = "Alle Einträge:"
-    return render_template("results.html", results=all, text=text)#
+    request = ""
+    spdict = {'search': '', 'type': 'broadcast'}
+    type = "nonspecific"
+    return search_results(request, type, spdict)
 
 # Signals form flask user
 @user_logged_in.connect_via(app)
@@ -155,6 +168,12 @@ def _after_login_hook(sender, user, **extra):
 
 @user_logged_in.connect_via(app)
 def _track_logins(sender, user, **extra):
-    #user.last_login_ip = request.remote_addr
-    #db.session.commit()
+    user.last_login_ip = request.remote_addr
+    login = logins(
+    ip = user.last_login_ip,
+    user_id = user.id,
+    time = time.asctime(),
+    )
+    db.session.add(login)
+    db.session.commit()
     return ""

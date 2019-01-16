@@ -22,7 +22,7 @@ class Users(db.Model, UserMixin):
 	roles = db.relationship('Roles', secondary='user_roles',
 	backref = db.backref('users', lazy='dynamic'))
 
-	# Define the relationship for author_id in terms and entrys models
+	# Define the relationship for author_id
 	terms = db.relationship("terms", backref="author", lazy="dynamic")
 	entrys = db.relationship("entrys", backref="author", lazy="dynamic")
 
@@ -51,8 +51,8 @@ class entrys(db.Model, SearchableMixin):
 	name = db.Column(db.String(150), server_default="")
 	author_id = db.Column(db.Integer(), db.ForeignKey("users.id", ondelete="CASCADE"))
 	creation_date = db.Column(db.String(20), server_default="")
-	creation_time = db.Column(db.String(20), server_default="")
-	content = db.Column(db.String(150), server_default="")
+	creation_time = db.Column(db.String(), server_default="")
+	content = db.Column(db.Text(), server_default="")
 
 # Define the Term Model with custom SearchableMixin
 # creation date/ time are only for full view
@@ -64,9 +64,21 @@ class terms(db.Model, SearchableMixin):
 	# author is only for traceability
 	author_id = db.Column(db.Integer(), db.ForeignKey("users.id", ondelete="CASCADE"))
 	creation_date = db.Column(db.String(20), server_default="")
-	creation_time = db.Column(db.String(20), server_default="")
+	creation_time = db.Column(db.String(), server_default="")
 	destination_day = db.Column(db.String(20), server_default="")
-	description = db.Column(db.String(150), server_default="")
+	description = db.Column(db.Text(), server_default="")
+
+# Logins model is fpr login tracking with ip and time
+# Only in use for testing !!!!!
+# It's pure tracking
+class logins(db.Model):
+	__tablename__ = "logins"
+	__searchable__ = ["time", "ip", "user_id"]
+	id = db.Column(db.Integer(), primary_key=True)
+	# Add Foreign key for user_id
+	user_id = db.Column(db.Integer())
+	time = db.Column(db.String(20), server_default="")
+	ip = db.Column(db.String(255), server_default="")
 
 # init of tabels
 db.create_all()
