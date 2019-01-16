@@ -7,4 +7,6 @@ Recoded Version of VKS
 - Organized with different files for different types of actions
 - adnvanced functions and function viewing
 - saved as package app
-- will feature a setup.py 
+- will feature a setup.py
+
+# This is not a plug and play version, you must manually add one time the elasticsearch indexes in a console
