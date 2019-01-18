@@ -1,3 +1,10 @@
+import elasticsearch
+from app.models import entrys, terms
+
+# Add/ refresh indexes for elasticsearch and make the search working
+entrys.reindex()
+terms.reindex()
+
 from app import app
 
 info = """
@@ -13,7 +20,9 @@ info = """
 ###########################
 
 ###########################
-#   License in LICENSE    #
+#     Licensed under      #
+#     GNU GENERAL         #
+#     PUBLIC LICENSE      #
 ###########################
 
 ###########################
