@@ -87,6 +87,7 @@ def add_term():
 def search_results(request, type, spdict):
     if type == "specific":
         input = make_dict(request)
+
     elif type == "nonspecific":
         input = spdict
     else:
@@ -94,6 +95,7 @@ def search_results(request, type, spdict):
         return redirect("/")
     print(input)
     text = ""
+
     if input["type"]=="broadcast":
         result_type = input["type"] or ""
         entrys.reindex()
@@ -101,13 +103,18 @@ def search_results(request, type, spdict):
         if input["search"] == "":
                 qry = db_session.query(entrys)
                 results = qry.all()
+                for res in results:
+                    author_id = res.id
+                author = Users.query.filter_by(id=author_id).first()
                 if len(entrys.query.all()) > 1:
                     text = " Es wurden " + str(len(entrys.query.all())) + \
                      " Ergebnisse gefunden:"
                 else:
                     text = "Es wurde " + str(len(entrys.query.all())) + \
                      " Ergebniss gefunden: "
-                return render_template("results.html", results=results, text=text, result_type=result_type)
+
+                return render_template("results.html", results=results, \
+                text=text, result_type=result_type, author_name=author.username)
 
     if input["type"]=="term":
         terms.reindex()
@@ -131,7 +138,7 @@ def search_results(request, type, spdict):
         text = "Es wurde 1 Ergebniss für den Suchbegriff " + input["search"] + \
          " gefunden:"
     elif not results:
-        flash("Database Failure 01 - no FTS index")
+        flash("Database Failure 01 - no FTS index or search data")
         return redirect("/")
     else:
         flash("Kein Ergebniss für den Suchbegriff " + str(input["search"]) + \
