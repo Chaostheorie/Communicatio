@@ -57,7 +57,6 @@ def add_user():
 
     if request.method == "POST":
         multiselect = request.form.getlist("roles")
-        print(multiselect)
         user1 = Users(
         username = request.form["username"],
         password = user_manager.hash_password(request.form["password"]),
