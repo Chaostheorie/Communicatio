@@ -1,6 +1,6 @@
 import elasticsearch
-
-from app.models import entrys, terms
+from app.models import *
+from app.mixin import *
 
 entrys.reindex()
 terms.reindex()

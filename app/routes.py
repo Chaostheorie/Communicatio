@@ -110,6 +110,7 @@ def search_results(request, type, spdict):
                 return render_template("results.html", results=results, text=text, result_type=result_type)
 
     if input["type"]=="term":
+        terms.reindex()
         results = query, total = terms.search(input["search"], 1, 100)
         result_type = input["type"] or ""
         if input["search"] == "":
