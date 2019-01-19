@@ -33,7 +33,6 @@ def make_dict(request):
     return input
 
 @app.route("/", methods=["GET", "POST"])
-@login_required
 def index():
     if request.method == "GET":
         return render_template("index.html")
@@ -82,7 +81,13 @@ def add_term():
         print(new_term)
         return redirect("/add-term")
 
+@app.route("/logins_views")
+@roles_required("Admin")
+def logins_view():
+    return ""
+
 @app.route("/results")
+@login_required
 def search_results(request, type, spdict):
     if type == "specific":
         input = make_dict(request)
@@ -93,7 +98,6 @@ def search_results(request, type, spdict):
         flash("Error 02: Bad request")
         return redirect("/")
     print(input)
-    text = ""
 
     if input["type"]=="broadcast":
         result_type = input["type"] or ""
@@ -154,6 +158,7 @@ def about_us():
     return redirect(return_url)
 
 @app.route("/all_terms")
+@login_required
 def all_terms():
     request = ""
     spdict = {'search': '', 'type': 'term'}
@@ -161,6 +166,7 @@ def all_terms():
     return search_results(request, type, spdict)
 
 @app.route("/all_entrys")
+@login_required
 def all_entrys():
     request = ""
     spdict = {'search': '', 'type': 'broadcast'}
