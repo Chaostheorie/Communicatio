@@ -1,6 +1,7 @@
 from app import app, db, search
 from app.mixin import SearchableMixin
 from flask_user import UserMixin, UserManager
+import hashlib
 
 # Define custom User Model with flask_user"s UserMixin
 class Users(db.Model, UserMixin):
@@ -8,6 +9,12 @@ class Users(db.Model, UserMixin):
 	__searchable__ = ["username",]
 
 	id = db.Column(db.Integer, primary_key=True)
+
+	# User avatar
+	def avatar(self, size):
+		digest = hashlib.sha1(self.username.lower().encode("utf-8")).hexdigest()
+		return "https://www.gravatar.com/avatar/{}?d=identicon&s={}".format(
+		digest, size)
 
 	# User authentication information
 	username = db.Column(db.String(50), nullable=False, unique=True)

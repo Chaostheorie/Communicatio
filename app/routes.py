@@ -94,9 +94,11 @@ def search_results(request, type, spdict):
 
     elif type == "nonspecific":
         input = spdict
+
     else:
         flash("Error 02: Bad request")
         return redirect("/")
+
     print(input)
 
     if input["type"]=="broadcast":
@@ -157,6 +159,12 @@ def about_us():
     return_url = request.referrer or "/"
     return redirect(return_url)
 
+@app.route("/profile/<username>")
+@login_required
+def profile(username):
+    user = Users.query.filter_by(username=username).first_or_404()
+    return render_template("profile.html", user=user )
+
 @app.route("/all_terms")
 @login_required
 def all_terms():
@@ -172,6 +180,16 @@ def all_entrys():
     spdict = {'search': '', 'type': 'broadcast'}
     type = "nonspecific"
     return search_results(request, type, spdict)
+
+@app.route("/report", methods=["GET", "POST"])
+@login_required
+def report():
+    if request.method == "GET":
+        return render_template("report.html")
+
+    if request.method == "POST":
+        make_dict(request)
+        return ""
 
 # Signals form flask user
 @user_logged_in.connect_via(app)
@@ -190,3 +208,16 @@ def _track_logins(sender, user, **extra):
     db.session.add(login)
     db.session.commit()
     return ""
+
+# Errorhandler pages
+@app.errorhandler(404)
+def page_not_found(e):
+    return_url = request.referrer or "/"
+    er = "404"
+    return render_template("error.html", return_url=return_url, error=er), 404
+
+@app.errorhandler(403)
+def forbidden(e):
+    return_url = request.referrer or "/"
+    er = "403"
+    return render_template("error.html", return_url=return_url, error=er), 403
