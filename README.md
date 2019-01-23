@@ -5,8 +5,7 @@ Recoded Version of VKS
 - Full Text Search with elasticsearch
 - Through sqlalchemy support for many database types
 - Organized with different files for different types of actions
-- adnvanced functions and function viewing
-- saved as package app
+- advanced functions and function viewing
 - will feature a setup.py
 
 This is not a plug and play version, you must manually add one time the elasticsearch indexes in a console
