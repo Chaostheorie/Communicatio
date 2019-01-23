@@ -162,8 +162,11 @@ def about_us():
 @app.route("/profile/<username>")
 @login_required
 def profile(username):
-    user = Users.query.filter_by(username=username).first_or_404()
-    return render_template("profile.html", user=user )
+    user_searched = Users.query.filter_by(username=username).first_or_404()
+    user_logged_in = current_user.username
+    print(user_logged_in)
+    return render_template("profile.html", user=user_searched, \
+    logged_user=user_logged_in )
 
 @app.route("/all_terms")
 @login_required
