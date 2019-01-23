@@ -28,7 +28,7 @@ db_session = scoped_session(sessionmaker(autocommit=True,
 babel = Babel(app)
 
 from app import models, search, mixin
-from app.models import Users
+from app.models import User
 
 # Setup Flask-User and specify the User data-model
 

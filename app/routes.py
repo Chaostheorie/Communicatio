@@ -7,17 +7,20 @@ from flask_sqlalchemy import *
 import time
 
 #setup user manager
-user_manager = UserManager(app, db, Users)
+user_manager = UserManager(app, db, User)
+
+test_role = Role(name="test_2")
+
 
 # add admin for testing if not added yet
-if not Users.query.filter(Users.username == "admin").first():
-    user = Users(
+if not User.query.filter(User.username == "admin").first():
+    user = User(
         username = "admin",
         password = user_manager.hash_password("Password1"),
         first_name = "Chaostheorie",
-        last_name = "https://github.com/Chaostheorie"
+        last_name = "admin"
     )
-    user.roles.append(Roles(name="Admin"))
+    user.roles.append(Role(name="Admin"))
     db.session.add(user)
     db.session.commit()
 
@@ -51,21 +54,22 @@ def admin():
 @roles_required("Admin")
 def add_user():
     if request.method == "GET":
-        roles_all = Roles.query.order_by(Roles.name).all()
+        roles_all = Role.query.order_by(Role.name).all()
         return render_template("add_user.html", roles=roles_all)
 
     if request.method == "POST":
         multiselect = request.form.getlist("roles")
-        user1 = Users(
+        user = User(
         username = request.form["username"],
         password = user_manager.hash_password(request.form["password"]),
         first_name = request.form["first_name"],
         last_name = request.form["last_name"],
         )
+        user.roles = []
         for i in range(len(multiselect)):
-            user1.roles.append(Roles(name=multiselect[i]))
+            user.roles.append(Role(name=multiselect[i]))
             print(str(i) + ": " + multiselect[i])
-        db.session.add(user1)
+        db.session.add(user)
         db.session.commit()
         flash("Add username: " + request.form["username"] + " sucessfully")
         return redirect("/add-user")
@@ -110,7 +114,7 @@ def search_results(request, type, spdict):
                 results = qry.all()
                 for res in results:
                     author_id = res.id
-                author = Users.query.filter_by(id=author_id).first()
+                author = User.query.filter_by(id=author_id).first()
                 if len(entrys.query.all()) > 1:
                     text = " Es wurden " + str(len(entrys.query.all())) + \
                      " Ergebnisse gefunden:"
@@ -162,7 +166,7 @@ def about_us():
 @app.route("/profile/<username>")
 @login_required
 def profile(username):
-    user_searched = Users.query.filter_by(username=username).first_or_404()
+    user_searched = User.query.filter_by(username=username).first_or_404()
     user_logged_in = current_user.username
     print(user_logged_in)
     return render_template("profile.html", user=user_searched, \
