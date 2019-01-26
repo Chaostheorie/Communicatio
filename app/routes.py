@@ -199,16 +199,18 @@ def search_results(request, type, spdict, return_url):
         flash("Database Failure 01 - no FTS index or search data")
         return redirect(return_url)
 
-    else:
-        flash("Kein Ergebniss für den Suchbegriff " + str(input["search"]) + \
-        " gefunden")
-        return redirect(return_url)
+    #else:
+    #    flash("Kein Ergebniss für den Suchbegriff " + str(input["search"]) + \
+    #    " gefunden")
+    #    return redirect(return_url)
 
-    if input["type"] == "profile":
+    if result_type == "profile":
         length = len(profile_results)
+        text = "Es wurde " + str(length) + " Ergebniss gefunden."
+        if length > 1:
+            text = "Es wurde " + str(length) + " Ergebnisse gefunden."
         return render_template("results.html", text=text, results = \
         profile_results, result_type=result_type, len=length)
-
     return render_template("results.html", results=results, text=text, \
     result_type=result_type)
 
