@@ -21,6 +21,17 @@ if not User.query.filter(User.username == "admin").first():
     db.session.add(user)
     db.session.commit()
 
+if not User.query.filter(User.username == "guest").first():
+    user = User(
+        username = "guest",
+        password = user_manager.hash_password("Passwort"),
+        first_name = "Gast",
+        last_name = "Coder Dojo"
+    )
+    db.session.add(user)
+    db.session.commit()
+
+
 # this function is for form Processing
 def make_dict(request):
     values = list(request.form.values())
