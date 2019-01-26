@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block app_content %}
+<p>
+  The profiles are made for users and could be accesed by /profile/username.
+  They are automatically generated if you create a user and could be searched
+   in future.
+  <hr>
+  <form  action="/profile" method="post">
+    <div class="form-group">
+      <input type="hidden" name="type" value="profile">
+      <input type="text" name="search" placeholder="Suchbegriff">
+      <input type="submit" value="Los">
+    </div>
+  </form>
+{% endblock %}

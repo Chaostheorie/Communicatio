@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block app_content %}
-    {% if result_type=="term" or "broadcast" %}
+    {% if result_type=="term" or "broadcast" or "profile" %}
     <p>
       {{ text }}
     </p>
@@ -33,7 +33,8 @@
                 </tr>
             </tbody>
             {% endfor %}
-          {% elif result_type=="broadcast" %}
+          {% endif %}
+          {% if result_type == "broadcast" %}
           <thead class="thead-dark">
             <th scope="col">Name</th>
             <th scope="col">Ersteller</th>
@@ -43,11 +44,21 @@
             <tbody>
               <tr>
                 <td scope="row"> {{ result.name }} </td>
-                <td> {{ author_name }} </td>
+                <td> {{ result.author_name }} </td>
                 <td> {{ result.content }} </td>
               </tr>
             </tbody>
             {% endfor %}
+          {% endif %}
+          {% if result_type == "profile" %}
+            {% for i in range(len) %}
+              <table>
+                <tr valign="top">
+                  <td><img src="{{ results[i]["avatar_url"] }}"></td>
+                  <td>{{ results[i]["username"] }} <br>{{ results[i]["last_name"] }}, {{ results[i]["first_name"] }}</td>
+                </tr>
+              </table>
+              {% endfor %}
           {% endif %}
       </table>
 {% endblock %}

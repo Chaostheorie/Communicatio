@@ -4,9 +4,9 @@ from flask_user import UserMixin, UserManager
 import hashlib
 
 # Define custom User Model with flask_user"s UserMixin
-class User(db.Model, UserMixin):
+class User(db.Model, UserMixin, SearchableMixin):
 	__tablename__ = "user"
-	__searchable__ = ["username",]
+	__searchable__ = ["username", "first_name", "last_name"]
 
 	id = db.Column(db.Integer, primary_key=True)
 
@@ -28,6 +28,10 @@ class User(db.Model, UserMixin):
 	# Relationships
 	roles = db.relationship('Role', secondary='user_roles', \
 	backref = db.backref('user', lazy='dynamic'))
+
+
+	def __repr__(self):
+		return '<User {}>'.format(self.username)
 
 # Define the Role data model
 class Role(db.Model):
@@ -51,6 +55,7 @@ class entrys(db.Model, SearchableMixin):
 	__tablename__ = "entrys"
 	__searchable__ = ["name", "content"]
 	id = db.Column(db.Integer(), primary_key=True, unique=True)
+	author_id = db.Column(db.Integer())
 	name = db.Column(db.String(150), server_default="")
 	creation_date = db.Column(db.String(20), server_default="")
 	creation_time = db.Column(db.String(), server_default="")
@@ -63,20 +68,17 @@ class terms(db.Model, SearchableMixin):
 	__searchable__ = ["name", "destination_day", "description"]
 	id = db.Column(db.Integer(), primary_key=True, unique=True)
 	name = db.Column(db.String(150))
+	author_id = db.Column(db.String(255))
 	creation_date = db.Column(db.String(20), server_default="")
 	creation_time = db.Column(db.String(), server_default="")
 	destination_day = db.Column(db.String(20), server_default="")
 	description = db.Column(db.Text(), server_default="")
 
-# Logins model is fpr login tracking with ip and time
-# Only in use for testing !!!!!
-# It's pure tracking
 class logins(db.Model):
 	__tablename__ = "logins"
-	__searchable__ = ["time", "ip", "user_id"]
+	__searchable__ = ["time", "name", "user_id"]
 	id = db.Column(db.Integer(), primary_key=True)
-	# Add Foreign key for user_id
-	user_id = db.Column(db.Integer())
+	name = db.Column(db.String(255), server_default="")
 	time = db.Column(db.String(20), server_default="")
 	ip = db.Column(db.String(255), server_default="")
 

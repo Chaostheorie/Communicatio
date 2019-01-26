@@ -5,6 +5,8 @@ from app.models import *
 from flask_user import *
 from flask_sqlalchemy import *
 import time
+from pusher import Pusher
+import ansible
 
 #setup user manager
 user_manager = UserManager(app, db, User)
@@ -38,17 +40,27 @@ def make_dict(request):
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "GET":
-        return render_template("index.html")
+        try:
+            text = "Welcome " + current_user.username + " to the webpage"
+        except:
+            text= ""
+        return render_template("index.html", text=text)
 
     if request.method == "POST":
         type = "specific"
         spdict = ""
         return search_results(request, type, spdict)
 
-@app.route("/admin")
+@app.route("/admin/<method>/<username>", methods=["GET", "POST"])
 @roles_required("Admin")
-def admin():
-    return render_template("admin.html")
+def admin(method, username):
+    if request.method == "GET":
+        return render_template("admin.html", method=method, username=username, \
+        type="action")
+
+@app.route("/admin")
+def admin_dashboard():
+    return render_template("admin.html", type="view")
 
 @app.route("/add-user", methods=["POST", "GET"])
 @roles_required("Admin")
@@ -93,6 +105,7 @@ def logins_view():
 @app.route("/results")
 @login_required
 def search_results(request, type, spdict):
+    return_url = request.referrer or "/"
     if type == "specific":
         input = make_dict(request)
 
@@ -101,9 +114,7 @@ def search_results(request, type, spdict):
 
     else:
         flash("Error 02: Bad request")
-        return redirect("/")
-
-    print(input)
+        return redirect(return_url)
 
     if input["type"]=="broadcast":
         result_type = input["type"] or ""
@@ -112,9 +123,6 @@ def search_results(request, type, spdict):
         if input["search"] == "":
                 qry = db_session.query(entrys)
                 results = qry.all()
-                for res in results:
-                    author_id = res.id
-                author = User.query.filter_by(id=author_id).first()
                 if len(entrys.query.all()) > 1:
                     text = " Es wurden " + str(len(entrys.query.all())) + \
                      " Ergebnisse gefunden:"
@@ -123,38 +131,80 @@ def search_results(request, type, spdict):
                      " Ergebniss gefunden: "
 
                 return render_template("results.html", results=results, \
-                text=text, result_type=result_type, author_name=author.username)
+                text=text, result_type=result_type)
+
+    if input["type"]=="profile":
+        User.reindex()
+        result_type = input["type"]
+        results = query, total = User.search(input["search"], 1 , 100)
+        profile_results = []
+        for result in query:
+            print(result.username)
+            digest = hashlib.sha1(result.username.encode("utf-8")).hexdigest()
+            avatar = "https://www.gravatar.com/avatar/{}?d=identicon&s=36".\
+            format(digest)
+            profile = {
+            "username":result.username,
+            "last_name":result.last_name,
+            "first_name":result.first_name,
+            "avatar_url":avatar
+            }
+            profile_results.append(profile)
+
+        if input["search"] == "":
+            results = db_session.query(User).order_by(User.username).all()
+            if len(User.query.all()) > 1:
+                    text = " Es wurden " + str(len(User.query.all())) + \
+                     " Ergebnisse gefunden:"
+            else:
+                text = "Es wurde " + str(len(User.query.all())) + \
+                 " Ergebniss gefunden: "
+            return render_template("results.html", results=results, text=\
+            text, result_type=result_type)
 
     if input["type"]=="term":
         terms.reindex()
         results = query, total = terms.search(input["search"], 1, 100)
-        result_type = input["type"] or ""
+        result_type = input["type"]
         if input["search"] == "":
-                qry = db_session.query(terms)
-                results = qry.all()
+                results = db_session.query(terms).all()
                 if len(terms.query.all()) > 1:
                     text = " Es wurden " + str(len(terms.query.all())) + \
                      " Ergebnisse gefunden:"
                 else:
                     text = "Es wurde " + str(len(terms.query.all())) + \
                      " Ergebniss gefunden: "
-                return render_template("results.html", results=results, text=text, result_type=result_type)
+                return render_template("results.html", results=results, text= \
+                text, result_type=result_type)
 
     if results[1] > 1:
         text = "Es wurden " + str(total) + " Ergebnisse für den Suchbegriff " +\
          input["search"] + " gefunden:"
+
     elif results[1] == 1:
         text = "Es wurde 1 Ergebniss für den Suchbegriff " + input["search"] + \
          " gefunden:"
+
+    elif results[1] == 0:
+        flash("Keine Einträge vorhanden")
+        return redirect(return_url)
+
     elif not results:
         flash("Database Failure 01 - no FTS index or search data")
-        return redirect("/")
+        return redirect(return_url)
+
     else:
         flash("Kein Ergebniss für den Suchbegriff " + str(input["search"]) + \
         " gefunden")
-        return_url = request.referrer or "/"
         return redirect(return_url)
-    return render_template("results.html", results=query, text=text)
+
+    if input["type"] == "profile":
+        length = len(profile_results)
+        return render_template("results.html", text=text, results = \
+        profile_results, result_type=result_type, len=length)
+        
+    return render_template("results.html", results=results, text=text, \
+    result_type=result_type)
 
 # for later implementation and allowing url_for(*) to work
 @app.route("/about-us")
@@ -165,12 +215,23 @@ def about_us():
 
 @app.route("/profile/<username>")
 @login_required
-def profile(username):
+def profile_specific(username):
     user_searched = User.query.filter_by(username=username).first_or_404()
     user_logged_in = current_user.username
     print(user_logged_in)
-    return render_template("profile.html", user=user_searched, \
+    return render_template("profile_specific.html", user=user_searched, \
     logged_user=user_logged_in )
+
+@app.route("/profile", methods=["GET", "POST"])
+@login_required
+def profile_main():
+    if request.method == "GET":
+        return render_template("profile_main.html")
+
+    elif request.method == "POST":
+        type = "specific"
+        spdict = ""
+        return search_results(request, type, spdict)
 
 @app.route("/all_terms")
 @login_required
@@ -209,7 +270,7 @@ def _track_logins(sender, user, **extra):
     user.last_login_ip = request.remote_addr
     login = logins(
     ip = user.last_login_ip,
-    user_id = user.id,
+    name = user.username,
     time = time.asctime(),
     )
     db.session.add(login)
@@ -217,6 +278,13 @@ def _track_logins(sender, user, **extra):
     return ""
 
 # Errorhandler pages
+# Use 500 errorhandler only if you don't want the debug
+@app.errorhandler(500)
+def internal_server_error(e):
+    er = "Serverfehler"
+    return_url = request.referrer or "/"
+    return render_template("error.html", return_url=return_url, error=er)
+
 @app.errorhandler(404)
 def page_not_found(e):
     return_url = request.referrer or "/"
