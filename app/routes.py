@@ -11,9 +11,6 @@ import ansible
 #setup user manager
 user_manager = UserManager(app, db, User)
 
-test_role = Role(name="test_2")
-
-
 # add admin for testing if not added yet
 if not User.query.filter(User.username == "admin").first():
     user = User(
@@ -49,7 +46,8 @@ def index():
     if request.method == "POST":
         type = "specific"
         spdict = ""
-        return search_results(request, type, spdict)
+        return_url = request.referrer or "/"
+        return search_results(request, type, spdict, return_url)
 
 @app.route("/admin/<method>/<username>", methods=["GET", "POST"])
 @roles_required("Admin")
@@ -94,7 +92,6 @@ def add_term():
 
     if request.method == "POST":
         new_term = make_dict(request)
-        print(new_term)
         return redirect("/add-term")
 
 @app.route("/logins_views")
@@ -104,8 +101,7 @@ def logins_view():
 
 @app.route("/results")
 @login_required
-def search_results(request, type, spdict):
-    return_url = request.referrer or "/"
+def search_results(request, type, spdict, return_url):
     if type == "specific":
         input = make_dict(request)
 
@@ -139,7 +135,6 @@ def search_results(request, type, spdict):
         results = query, total = User.search(input["search"], 1 , 100)
         profile_results = []
         for result in query:
-            print(result.username)
             digest = hashlib.sha1(result.username.encode("utf-8")).hexdigest()
             avatar = "https://www.gravatar.com/avatar/{}?d=identicon&s=36".\
             format(digest)
@@ -174,6 +169,9 @@ def search_results(request, type, spdict):
                 else:
                     text = "Es wurde " + str(len(terms.query.all())) + \
                      " Ergebniss gefunden: "
+                    if total == 0:
+                        flash("Es sind Einträge vorhanden")
+                        return redirect(return_url)
                 return render_template("results.html", results=results, text= \
                 text, result_type=result_type)
 
@@ -184,9 +182,8 @@ def search_results(request, type, spdict):
     elif results[1] == 1:
         text = "Es wurde 1 Ergebniss für den Suchbegriff " + input["search"] + \
          " gefunden:"
-
-    elif results[1] == 0:
-        flash("Keine Einträge vorhanden")
+    if total == 0:
+        flash("Es sind keine Einträge vorhanden")
         return redirect(return_url)
 
     elif not results:
@@ -202,7 +199,7 @@ def search_results(request, type, spdict):
         length = len(profile_results)
         return render_template("results.html", text=text, results = \
         profile_results, result_type=result_type, len=length)
-        
+
     return render_template("results.html", results=results, text=text, \
     result_type=result_type)
 
@@ -218,7 +215,6 @@ def about_us():
 def profile_specific(username):
     user_searched = User.query.filter_by(username=username).first_or_404()
     user_logged_in = current_user.username
-    print(user_logged_in)
     return render_template("profile_specific.html", user=user_searched, \
     logged_user=user_logged_in )
 
@@ -231,23 +227,25 @@ def profile_main():
     elif request.method == "POST":
         type = "specific"
         spdict = ""
-        return search_results(request, type, spdict)
+        return_url = request.referrer or "/"
+        return search_results(request, type, spdict, return_url)
 
 @app.route("/all_terms")
 @login_required
 def all_terms():
-    request = ""
+    return_url = request.referrer or "/"
     spdict = {'search': '', 'type': 'term'}
     type = "nonspecific"
-    return search_results(request, type, spdict)
+    return search_results("", type, spdict, return_url)
 
 @app.route("/all_entrys")
 @login_required
 def all_entrys():
-    request = ""
+    return_url = request.referrer or "/"
     spdict = {'search': '', 'type': 'broadcast'}
     type = "nonspecific"
-    return search_results(request, type, spdict)
+    return_url = request.referrer
+    return search_results("", type, spdict, return_url)
 
 @app.route("/report", methods=["GET", "POST"])
 @login_required
