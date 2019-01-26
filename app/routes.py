@@ -5,8 +5,6 @@ from app.models import *
 from flask_user import *
 from flask_sqlalchemy import *
 import time
-from pusher import Pusher
-import ansible
 
 #setup user manager
 user_manager = UserManager(app, db, User)
