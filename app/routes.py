@@ -193,7 +193,7 @@ def search_results(request, type, spdict, return_url):
          " gefunden:"
     if total == 0:
         flash("Es sind keine Einträge vorhanden")
-        return redirect(return_url)
+        return redirect("/")
 
     elif not results:
         flash("Database Failure 01 - no FTS index or search data")
