@@ -26,4 +26,9 @@ info = """
 """
 print(info)
 
+# Refresh the elasticsearch indicies
+User.reindex()
+entrys.reindex()
+terms.reindex()
+
 app.run(debug=True, host="0.0.0.0", port=5000)
