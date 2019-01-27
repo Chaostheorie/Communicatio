@@ -27,8 +27,11 @@ info = """
 print(info)
 
 # Refresh the elasticsearch indicies
+from app.models import User, terms, entrys
 User.reindex()
 entrys.reindex()
 terms.reindex()
+
+print("Indicies refreshed")
 
 app.run(debug=True, host="0.0.0.0", port=5000)
