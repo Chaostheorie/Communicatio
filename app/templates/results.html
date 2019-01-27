@@ -54,8 +54,8 @@
             {% for i in range(len) %}
               <table>
                 <tr valign="top">
-                  <td><img src="{{ results[i]["avatar_url"] }}"></td>
-                  <td>{{ results[i]["username"] }} <br>{{ results[i]["last_name"] }}, {{ results[i]["first_name"] }}</td>
+                  <td><a href="/profile/{{ results[i]["username"] }}"><img src="{{ results[i]["avatar_url"] }}" class="img-thumbnail" alt="Avatar of {{ results[i]["username"] }}" ></a></td>
+                  <td><a href="/profile/{{ results[i]["username"] }}" class="badge badge-light">{{ results[i]["username"] }} </a><br>{{ results[i]["last_name"] }}, {{ results[i]["first_name"] }}</td>
                 </tr>
               </table>
               {% endfor %}

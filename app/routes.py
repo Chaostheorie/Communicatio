@@ -12,10 +12,10 @@ user_manager = UserManager(app, db, User)
 # add admin for testing if not added yet
 if not User.query.filter(User.username == "admin").first():
     user = User(
-        username = "admin",
+        username = "Admin",
         password = user_manager.hash_password("Password1"),
         first_name = "Chaostheorie",
-        last_name = "admin"
+        last_name = "Admin"
     )
     user.roles.append(Role(name="Admin"))
     db.session.add(user)
@@ -48,9 +48,9 @@ def index():
     if request.method == "GET":
         try:
             text = "Welcome " + current_user.username + " to the webpage"
+            return render_template("index.html", text=text)
         except:
-            text= ""
-        return render_template("index.html", text=text)
+            return render_template("index.html")
 
     if request.method == "POST":
         type = "specific"
@@ -229,6 +229,10 @@ def profile_specific(username):
     return render_template("profile_specific.html", user=user_searched, \
     logged_user=user_logged_in )
 
+@app.route("/profile/")
+def profile_redirect():
+    return profile_main()
+
 @app.route("/profile", methods=["GET", "POST"])
 @login_required
 def profile_main():
@@ -244,7 +248,7 @@ def profile_main():
 @app.route("/all_terms")
 @login_required
 def all_terms():
-    return_url = request.referrer or "/"
+    return_url = "/"
     spdict = {'search': '', 'type': 'term'}
     type = "nonspecific"
     return search_results("", type, spdict, return_url)
@@ -252,7 +256,7 @@ def all_terms():
 @app.route("/all_entrys")
 @login_required
 def all_entrys():
-    return_url = request.referrer or "/"
+    return_url = "/"
     spdict = {'search': '', 'type': 'broadcast'}
     type = "nonspecific"
     return_url = request.referrer
