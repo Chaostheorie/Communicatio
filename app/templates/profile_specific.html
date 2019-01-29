@@ -15,11 +15,38 @@
                         <p>
                             Name: {{ user.last_name }}, {{ user.first_name }}
                             <br />
-                            {% if user.role == "" %}
+                            {% if user.last_seen == None %}
+                              Unbekant
+                            {% else %}
+                              {{ user.last_seen }}
                             {% endif %}
                             <br />
+                            {% if user.level == "teacher" %}
+                              Lehrer
+                                {% if user.class == "None" %}
+                                {% else %}
+                                 der Klasse {{ user.class }}
+                                {% endif %}
+                              <br>
+                            {% elif user.level == "pupil" %}
+                              Klasse {{ user.class }}
+                              <br>
+                            {% elif user.level == "secretary" %}
+                              Sekretariat
+                              <br>
+                            {% elif user.level == "headmaster" %}
+                              Schulleitung
+                              <br>
+                            {% else %}
+                              {{ user.level_specific }}
+                              <br>
+                            {% endif %}
+                            {% if not user.description %}
+                            {% else %}
+                              {{ user.description }}
+                            {% endif %}
                         <!-- Admin tools button -->
-                        {% if logged_user == "admin" %}
+                        {% if logged_user.level_specific == "admin" %}
                           <div class="dropdown">
                             <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                               Admin Werkzeuge

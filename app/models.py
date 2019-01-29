@@ -18,12 +18,17 @@ class User(db.Model, UserMixin, SearchableMixin):
 
 	# User authentication information
 	username = db.Column(db.String(50), nullable=False, unique=True)
-	password = db.Column(db.String(255), nullable=False, server_default='')
+	password = db.Column(db.String(255), nullable=False)
 
 	# User information
 	first_name = db.Column(db.String(100), nullable=False, server_default='')
 	last_name = db.Column(db.String(100), nullable=False, server_default='')
 	active = db.Column("is_active", db.Boolean(), nullable=False, server_default="1")
+	last_seen = db.Column(db.String(100), nullable=False, server_default="unknown")
+	level = db.Column(db.String(100))
+	level_specific = db.Column(db.String(100), server_default="")
+	description = db.Column(db.String(255))
+	shool_class = db.Column(db.String(10))
 
 	# Relationships
 	roles = db.relationship('Role', secondary='user_roles', \
@@ -55,7 +60,7 @@ class entrys(db.Model, SearchableMixin):
 	__tablename__ = "entrys"
 	__searchable__ = ["name", "content"]
 	id = db.Column(db.Integer(), primary_key=True, unique=True)
-	author_id = db.Column(db.Integer())
+	author = db.Column(db.String(255))
 	name = db.Column(db.String(150), server_default="")
 	creation_date = db.Column(db.String(20), server_default="")
 	creation_time = db.Column(db.String(), server_default="")
@@ -68,7 +73,7 @@ class terms(db.Model, SearchableMixin):
 	__searchable__ = ["name", "destination_day", "description"]
 	id = db.Column(db.Integer(), primary_key=True, unique=True)
 	name = db.Column(db.String(150))
-	author_id = db.Column(db.String(255))
+	author = db.Column(db.String(255))
 	creation_date = db.Column(db.String(20), server_default="")
 	creation_time = db.Column(db.String(), server_default="")
 	destination_day = db.Column(db.String(20), server_default="")

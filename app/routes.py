@@ -10,23 +10,29 @@ import time
 user_manager = UserManager(app, db, User)
 
 # add admin for testing if not added yet
-if not User.query.filter(User.username == "admin").first():
+if not User.query.filter(User.username == "Admin").all():
     user = User(
         username = "Admin",
         password = user_manager.hash_password("Password1"),
         first_name = "Chaostheorie",
-        last_name = "Admin"
+        last_name = "Admin",
+        level = "admin",
+        level_specific = "Staff of VKS",
+        description = "The admin of the Project."
     )
     user.roles.append(Role(name="Admin"))
     db.session.add(user)
     db.session.commit()
 
-if not User.query.filter(User.username == "guest").first():
+if not User.query.filter(User.username == "guest").all():
     user = User(
         username = "guest",
         password = user_manager.hash_password("Passwort"),
         first_name = "Gast",
-        last_name = "Coder Dojo"
+        last_name = "Coder Dojo",
+        level = "pupil",
+        shool_class = "10B",
+        description = "Anonymous guest user"
     )
     db.session.add(user)
     db.session.commit()
@@ -134,7 +140,9 @@ def search_results(request, type, spdict, return_url):
                 else:
                     text = "Es wurde " + str(len(entrys.query.all())) + \
                      " Ergebniss gefunden: "
-
+                if total == 0:
+                    flash("Für diesen Suchbegriff wurde kein Ergebniss gefunden")
+                    return redirect("/")
                 return render_template("results.html", results=results, \
                 text=text, result_type=result_type)
 
@@ -154,6 +162,9 @@ def search_results(request, type, spdict, return_url):
             "avatar_url":avatar
             }
             profile_results.append(profile)
+        if total == 0:
+            flash("Für diesen Suchbegriff wurde kein Ergebniss gefunden")
+            return redirect("/")
 
         if input["search"] == "":
             results = db_session.query(User).order_by(User.username).all()
@@ -163,6 +174,9 @@ def search_results(request, type, spdict, return_url):
             else:
                 text = "Es wurde " + str(len(User.query.all())) + \
                  " Ergebniss gefunden: "
+            if total == 0:
+                flash("Für diesen Suchbegriff wurde kein Ergebniss gefunden")
+                return redirect("/")
             return render_template("results.html", results=results, text=\
             text, result_type=result_type)
 
@@ -178,9 +192,9 @@ def search_results(request, type, spdict, return_url):
                 else:
                     text = "Es wurde " + str(len(terms.query.all())) + \
                      " Ergebniss gefunden: "
-                    if total == 0:
-                        flash("Es sind Einträge vorhanden")
-                        return redirect(return_url)
+                if total == 0:
+                    flash("Für diesen Suchbegriff wurde kein Ergebniss gefunden")
+                    return redirect("/")
                 return render_template("results.html", results=results, text= \
                 text, result_type=result_type)
 
@@ -192,17 +206,12 @@ def search_results(request, type, spdict, return_url):
         text = "Es wurde 1 Ergebniss für den Suchbegriff " + input["search"] + \
          " gefunden:"
     if total == 0:
-        flash("Es sind keine Einträge vorhanden")
+        flash("Für diesen Suchbegriff wurde kein Ergebniss gefunden")
         return redirect("/")
 
     elif not results:
         flash("Database Failure 01 - no FTS index or search data")
         return redirect(return_url)
-
-    #else:
-    #    flash("Kein Ergebniss für den Suchbegriff " + str(input["search"]) + \
-    #    " gefunden")
-    #    return redirect(return_url)
 
     if result_type == "profile":
         length = len(profile_results)
@@ -211,6 +220,9 @@ def search_results(request, type, spdict, return_url):
             text = "Es wurde " + str(length) + " Ergebnisse gefunden."
         return render_template("results.html", text=text, results = \
         profile_results, result_type=result_type, len=length)
+    if total == 0:
+        flash("Für diesen Suchbegriff wurde kein Ergebniss gefunden")
+        return redirect("/")
     return render_template("results.html", results=results, text=text, \
     result_type=result_type)
 
@@ -232,6 +244,12 @@ def profile_specific(username):
 @app.route("/profile/")
 def profile_redirect():
     return profile_main()
+
+@app.route("/profile/<username>/popup")
+@login_required
+def user_popup(username):
+    user_searched = User.query.filter_by(username=username).first_or_404()
+    return render_template("user_popup.html", user=user_searched)
 
 @app.route("/profile", methods=["GET", "POST"])
 @login_required
