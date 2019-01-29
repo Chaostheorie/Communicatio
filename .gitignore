@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# Custom
+VKS_main.sqlite
+
 # Distribution / packaging
 .Python
 build/
