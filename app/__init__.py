@@ -16,7 +16,6 @@ app.config.from_object(Config)
 
 # Init of Database modules
 db = SQLAlchemy(app)
-app.elasticsearch = Elasticsearch([app.config['ELASTICSEARCH_URL']])
 
 # Initialize Flask-BabelEx
 babel = Babel(app)
@@ -32,4 +31,6 @@ engine = create_engine('sqlite:///app/static/database/VKS_main.sqlite',
 db_session = scoped_session(sessionmaker(autocommit=True,
                                          autoflush=False,
                                          bind=engine))
+
+app.elasticsearch = Elasticsearch([app.config['ELASTICSEARCH_URL']])
 print("sucessfully Initialized")
