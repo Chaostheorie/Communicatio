@@ -15,6 +15,7 @@
                         <p>
                             Name: {{ user.last_name }}, {{ user.first_name }}
                             <br />
+                            Zuletzt gesehen:
                             {% if user.last_seen == None %}
                               Unbekant
                             {% else %}
