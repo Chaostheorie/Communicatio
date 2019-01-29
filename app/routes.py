@@ -21,8 +21,8 @@ if not User.query.filter(User.username == "Admin").all():
         description = "The admin of the Project."
     )
     user.roles.append(Role(name="Admin"))
-    db.session.add(user)
-    db.session.commit()
+    db_session.add(user)
+    db_session.commit()
 
 if not User.query.filter(User.username == "guest").all():
     user = User(
@@ -34,8 +34,8 @@ if not User.query.filter(User.username == "guest").all():
         shool_class = "10B",
         description = "Anonymous guest user"
     )
-    db.session.add(user)
-    db.session.commit()
+    db_session.add(user)
+    db_session.commit()
 
 
 # this function is for form Processing
@@ -126,13 +126,14 @@ def search_results(request, type, spdict, return_url):
     else:
         flash("Error 02: Bad request")
         return redirect(return_url)
+    len_s = ""
 
     if input["type"]=="broadcast":
         result_type = input["type"] or ""
         entrys.reindex()
         results = query, total = entrys.search(input["search"], 1, 100)
         if input["search"] == "":
-                qry = db_session.query(entrys)
+                qry = db.session.query(entrys)
                 results = qry.all()
                 if len(entrys.query.all()) > 1:
                     text = " Es wurden " + str(len(entrys.query.all())) + \
@@ -151,6 +152,7 @@ def search_results(request, type, spdict, return_url):
         result_type = input["type"]
         results = query, total = User.search(input["search"], 1 , 100)
         profile_results = []
+        len_s = len(profile_results)
         for result in query:
             digest = hashlib.sha1(result.username.encode("utf-8")).hexdigest()
             avatar = "https://www.gravatar.com/avatar/{}?d=identicon&s=36".\
@@ -162,30 +164,42 @@ def search_results(request, type, spdict, return_url):
             "avatar_url":avatar
             }
             profile_results.append(profile)
-        if total == 0:
-            flash("Für diesen Suchbegriff wurde kein Ergebniss gefunden")
-            return redirect("/")
 
         if input["search"] == "":
-            results = db_session.query(User).order_by(User.username).all()
+            results = db.session.query(User).order_by(User.username).all()
+            len_s = len(results)
+            profile_results = []
             if len(User.query.all()) > 1:
                     text = " Es wurden " + str(len(User.query.all())) + \
                      " Ergebnisse gefunden:"
             else:
                 text = "Es wurde " + str(len(User.query.all())) + \
                  " Ergebniss gefunden: "
-            if total == 0:
-                flash("Für diesen Suchbegriff wurde kein Ergebniss gefunden")
-                return redirect("/")
-            return render_template("results.html", results=results, text=\
-            text, result_type=result_type)
+            for result in results:
+                digest = hashlib.sha1(result.username.encode("utf-8")).hexdigest()
+                avatar = "https://www.gravatar.com/avatar/{}?d=identicon&s=36".\
+                format(digest)
+                profile = {
+                "username":result.username,
+                "last_name":result.last_name,
+                "first_name":result.first_name,
+                "avatar_url":avatar
+                }
+                profile_results.append(profile)
+            #if total == 0:
+            #    flash("Für diesen Suchbegriff wurde kein Ergebniss gefunden")
+            #    return redirect("/")
+
+            return render_template("results.html", results=profile_results, text=\
+            text, result_type=result_type, len=len_s)
+
 
     if input["type"]=="term":
         terms.reindex()
         results = query, total = terms.search(input["search"], 1, 100)
         result_type = input["type"]
         if input["search"] == "":
-                results = db_session.query(terms).all()
+                results = db.session.query(terms).all()
                 if len(terms.query.all()) > 1:
                     text = " Es wurden " + str(len(terms.query.all())) + \
                      " Ergebnisse gefunden:"
@@ -197,6 +211,9 @@ def search_results(request, type, spdict, return_url):
                     return redirect("/")
                 return render_template("results.html", results=results, text= \
                 text, result_type=result_type)
+        if total == 0:
+            flash("Für diesen Suchbegriff wurde kein Ergebniss gefunden")
+            return redirect("/")
 
     if results[1] > 1:
         text = "Es wurden " + str(total) + " Ergebnisse für den Suchbegriff " +\
@@ -205,9 +222,6 @@ def search_results(request, type, spdict, return_url):
     elif results[1] == 1:
         text = "Es wurde 1 Ergebniss für den Suchbegriff " + input["search"] + \
          " gefunden:"
-    if total == 0:
-        flash("Für diesen Suchbegriff wurde kein Ergebniss gefunden")
-        return redirect("/")
 
     elif not results:
         flash("Database Failure 01 - no FTS index or search data")
@@ -224,7 +238,7 @@ def search_results(request, type, spdict, return_url):
         flash("Für diesen Suchbegriff wurde kein Ergebniss gefunden")
         return redirect("/")
     return render_template("results.html", results=results, text=text, \
-    result_type=result_type)
+    result_type=result_type, len=len_s)
 
 # for later implementation and allowing url_for(*) to work
 @app.route("/about-us")

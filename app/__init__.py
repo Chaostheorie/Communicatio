@@ -21,16 +21,19 @@ db = SQLAlchemy(app)
 babel = Babel(app)
 
 # Initialize other things
-from app import models, search, mixin
-from app import routes
+from app import models
+
+app.elasticsearch = Elasticsearch([app.config['ELASTICSEARCH_URL']])
+print("sucessfully Initialized")
+
+from app import search, mixin
 
 # the db_session is a custom sessions for the case a modified session is needed
 # in use for a custom search part with pure SQLAlchemy for the session
 engine = create_engine('sqlite:///app/static/database/VKS_main.sqlite',
  convert_unicode=True)
-db_session = scoped_session(sessionmaker(autocommit=True,
+db_session = scoped_session(sessionmaker(autocommit=False,
                                          autoflush=False,
                                          bind=engine))
 
-app.elasticsearch = Elasticsearch([app.config['ELASTICSEARCH_URL']])
-print("sucessfully Initialized")
+from app import routes
