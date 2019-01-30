@@ -46,8 +46,10 @@
                             {% else %}
                               {{ user.description }}
                             {% endif %}
-                        <!-- Admin tools button -->
-                        {% if logged_user.level_specific == "admin" %}
+
+{% block admin_tools %}
+<!-- Admin tools button -->
+                        {% if logged_level == "admin" %}
                           <div class="dropdown">
                             <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                               Admin Werkzeuge
@@ -82,5 +84,5 @@
         </div>
     </div>
 </div>
-
+{% endblock %}
 {% endblock %}

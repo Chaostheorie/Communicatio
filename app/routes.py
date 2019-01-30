@@ -4,7 +4,7 @@ from app.mixin import *
 from app.models import *
 from flask_user import *
 from flask_sqlalchemy import *
-import time
+import time, datetime
 
 #setup user manager
 user_manager = UserManager(app, db, User)
@@ -72,8 +72,10 @@ def admin(method, username):
         type="action")
 
 @app.route("/admin")
+@roles_required("Admin")
 def admin_dashboard():
-    return render_template("admin.html", type="view")
+    login = logins.query.order_by("time_pr desc").limit(5).all()
+    return render_template("admin.html", logins=login, type="view")
 
 @app.route("/add-user", methods=["POST", "GET"])
 @roles_required("Admin")
@@ -109,10 +111,28 @@ def add_term():
         new_term = make_dict(request)
         return redirect("/add-term")
 
-@app.route("/logins_views")
+@app.route("/logins", methods=["GET", "POST"])
 @roles_required("Admin")
 def logins_view():
-    return ""
+    if request.method == "GET":
+        login = logins.query.order_by("time_pr desc").limit(100).all()
+        return render_template("logins_overview.html", logins=login,
+        current_page=1)
+
+    if request.method == "POST":
+        input = make_dict(request)
+        login = logins.query.order_by("time_pr desc").limit(100).all()
+        print(input)
+        return logins_view_specific(input["page"])
+
+@app.route("/logins/<page>")
+@roles_required("Admin")
+def logins_view_specific(page):
+    number = int(page) * 100 + 100
+    login = logins.query.order_by("time_pr desc").limit(number).all()
+    login_list = login[:number]
+    return render_template("logins_overview.html", logins=login_list,
+    current_page=int(page))
 
 @app.route("/results")
 @login_required
@@ -142,9 +162,10 @@ def search_results(request, type, spdict, return_url):
                     text = "Es wurde " + str(len(entrys.query.all())) + \
                      " Ergebniss gefunden: "
                 if total == 0:
-                    flash("Für diesen Suchbegriff wurde kein Ergebniss gefunden")
+                    flash("Für diesen Suchbegriff wurde kein Ergebniss \
+                     gefunden")
                     return redirect("/")
-                return render_template("results.html", results=results, \
+                return render_template("results.html", results=results,
                 text=text, result_type=result_type)
 
     if input["type"]=="profile":
@@ -176,7 +197,8 @@ def search_results(request, type, spdict, return_url):
                 text = "Es wurde " + str(len(User.query.all())) + \
                  " Ergebniss gefunden: "
             for result in results:
-                digest = hashlib.sha1(result.username.encode("utf-8")).hexdigest()
+                digest = hashlib.sha1(result.username.encode("utf-8")). \
+                hexdigest()
                 avatar = "https://www.gravatar.com/avatar/{}?d=identicon&s=36".\
                 format(digest)
                 profile = {
@@ -190,8 +212,8 @@ def search_results(request, type, spdict, return_url):
             #    flash("Für diesen Suchbegriff wurde kein Ergebniss gefunden")
             #    return redirect("/")
 
-            return render_template("results.html", results=profile_results, text=\
-            text, result_type=result_type, len=len_s)
+            return render_template("results.html", results=profile_results,
+             text=text, result_type=result_type, len=len_s)
 
 
     if input["type"]=="term":
@@ -207,10 +229,11 @@ def search_results(request, type, spdict, return_url):
                     text = "Es wurde " + str(len(terms.query.all())) + \
                      " Ergebniss gefunden: "
                 if total == 0:
-                    flash("Für diesen Suchbegriff wurde kein Ergebniss gefunden")
+                    flash("Für diesen Suchbegriff wurde kein Ergebniss \
+                     gefunden")
                     return redirect("/")
-                return render_template("results.html", results=results, text= \
-                text, result_type=result_type)
+                return render_template("results.html", results=results,
+                text=text, result_type=result_type)
         if total == 0:
             flash("Für diesen Suchbegriff wurde kein Ergebniss gefunden")
             return redirect("/")
@@ -243,7 +266,7 @@ def search_results(request, type, spdict, return_url):
 # for later implementation and allowing url_for(*) to work
 @app.route("/about-us")
 def about_us():
-    flash("Not Created yet")
+    flash("Noch nicht erstellt")
     return_url = request.referrer or "/"
     return redirect(return_url)
 
@@ -251,9 +274,10 @@ def about_us():
 @login_required
 def profile_specific(username):
     user_searched = User.query.filter_by(username=username).first_or_404()
-    user_logged_in = current_user.username
+    current_user_level = current_user.level
+    print(current_user_level)
     return render_template("profile_specific.html", user=user_searched, \
-    logged_user=user_logged_in )
+    logged_level=current_user_level )
 
 @app.route("/profile/")
 def profile_redirect():
@@ -310,6 +334,7 @@ def _after_login_hook(sender, user, **extra):
     flash(user.username + " logged in")
     return ""
 
+# For recording of user logins
 @user_logged_in.connect_via(app)
 def _track_logins(sender, user, **extra):
     user.last_login_ip = request.remote_addr
@@ -317,13 +342,14 @@ def _track_logins(sender, user, **extra):
     ip = user.last_login_ip,
     name = user.username,
     time = time.asctime(),
+    time_pr = datetime.datetime.now()
     )
     db.session.add(login)
     db.session.commit()
     return ""
 
 # Errorhandler pages
-# Use 500 errorhandler only if you don't want the debug
+# Use 500 errorhandler for security
 @app.errorhandler(500)
 def internal_server_error(e):
     er = "Serverfehler"

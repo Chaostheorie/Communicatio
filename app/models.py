@@ -84,6 +84,7 @@ class logins(db.Model):
 	__searchable__ = ["time", "name", "user_id"]
 	id = db.Column(db.Integer(), primary_key=True)
 	name = db.Column(db.String(255), server_default="")
+	time_pr = db.Column(db.DateTime())
 	time = db.Column(db.String(20), server_default="")
 	ip = db.Column(db.String(255), server_default="")
 
