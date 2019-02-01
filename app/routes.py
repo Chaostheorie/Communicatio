@@ -122,7 +122,6 @@ def logins_view():
     if request.method == "POST":
         input = make_dict(request)
         login = logins.query.order_by("time_pr desc").limit(100).all()
-        print(input)
         return logins_view_specific(input["page"])
 
 @app.route("/logins/<page>")
@@ -275,7 +274,6 @@ def about_us():
 def profile_specific(username):
     user_searched = User.query.filter_by(username=username).first_or_404()
     current_user_level = current_user.level
-    print(current_user_level)
     return render_template("profile_specific.html", user=user_searched, \
     logged_level=current_user_level )
 
