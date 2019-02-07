@@ -8,6 +8,7 @@ __pycache__/
 
 # Custom
 VKS_main.sqlite
+migrations
 
 # Distribution / packaging
 .Python
