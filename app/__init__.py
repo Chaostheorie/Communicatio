@@ -27,9 +27,12 @@ from app import models
 
 # Initalize Database Migrate
 migrate = Migrate(app, db)
-with app.app_context():
-    upgrade(directory='migrations', revision='head', sql=False, tag=None)
-
+try:
+    # Autoupgrade if flask migrate is Initialized
+    with app.app_context():
+        upgrade(directory='migrations', revision='head', sql=False, tag=None)
+except:
+    pass
 # Initalize Elasticsearch
 app.elasticsearch = Elasticsearch([app.config["ELASTICSEARCH_URL"]])
 
