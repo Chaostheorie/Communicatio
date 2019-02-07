@@ -170,7 +170,6 @@ def add_user():
                 str(check["min_len"]) + " Zeichen)")
                 return redirect("/add-user")
 
-
 @app.route("/add-term", methods=["POST", "GET"])
 @roles_required("Admin")
 def add_term():

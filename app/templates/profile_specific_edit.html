@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block app_content %}
+
+<div class="container">
+  <form>
+  <div class="row">
+      <div class="col-xs-12 col-sm-6 col-md-6">
+          <div class="well well-sm">
+              <div class="row">
+                  <div class="col-sm-6 col-md">
+                      <img src="{{ user.avatar(128) }}" alt="avatar" class="img-responsive" />
+                  </div>
+                  <div class="col-sm-6 col-md-8">
+                    <div class="row">
+                      <div class="col">
+                        <input class="form-control" type="text" placeholder="Nutzername" value="{{ user.username }}">
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col">
+                        <input type="text" class="form-control" placeholder="Vorname" value="{{ user.first_name }}">
+                      </div>
+                      <div class="col">
+                        <input type="text" class="form-control" placeholder="Nachname" value="{{ user.last_name }}">
+                      </div>
+                    </div>
+                    </div>
+
+                      <p>
+                          Name: {{ user.last_name }}, {{ user.first_name }}
+                          <br />
+                          Zuletzt gesehen:
+                          {% if user.last_seen == None %}
+                            Unbekannt
+                          {% else %}
+                            {{ user.last_seen }}
+                          {% endif %}
+                          <br />
+                          {% if user.level == "teacher" %}
+                            Lehrer
+                              {% if user.class == "None" %}
+                              {% else %}
+                               der Klasse {{ user.school_class }}
+                              {% endif %}
+                            <br>
+                          {% elif user.level == "pupil" %}
+                            Klasse: {{ user.school_class }}
+                            <br>
+                          {% elif user.level == "secretary" %}
+                            Sekretariat
+                            <br>
+                          {% elif user.level == "headmaster" %}
+                            Schulleitung
+                            <br>
+                          {% else %}
+                            {{ user.level_specific }}
+                            <br>
+                          {% endif %}
+                          {% if not user.description %}
+                          {% else %}
+                            {{ user.description }}
+                          {% endif %}
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+{% endblock %}
