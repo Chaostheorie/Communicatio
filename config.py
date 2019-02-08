@@ -25,8 +25,8 @@ class Config(object):
     USER_ENABLE_CHANGE_USERNAME = True
     USER_ENABLE_CHANGE_PASSWORD = True
     USER_ENABLE_REGISTER = True
-    USER_LOGIN_TEMPLATE='flask_user/login_or_register.html'
-    USER_REGISTER_TEMPLATE='flask_user/login_or_register.html'
+    USER_LOGIN_TEMPLATE =  "flask_user/login.html"
+    USER_REGISTER_TEMPLATE="flask_user/register.html"
 
     # Settings for user data validation and databse settings
     USERNAME_MAX_LENGTH = 100
@@ -35,5 +35,7 @@ class Config(object):
     FIRST_NAME_MIN_LENGTH = 5
     LAST_NAME_MAX_LENGTH = 100
     LAST_NAME_MIN_LENGTH = 5
+    # The Minimal Length of Password is not affecting
+    # the flask user registartion at this point
     PASSWORD_MIN_LENGTH = 6
     PASSWORD_MAX_LENGTH = 48

@@ -30,7 +30,6 @@ class User(db.Model, UserMixin, SearchableMixin):
 	level_specific = db.Column(db.String(100), server_default="")
 	description = db.Column(db.String(255))
 	school_class = db.Column(db.String(10))
-
 	# Relationships
 	roles = db.relationship('Role', secondary='user_roles', \
 	backref = db.backref('user', lazy='dynamic'))
@@ -95,6 +94,6 @@ class Reports(db.Model, SearchableMixin):
 	id = db.Column(db.Integer(), primary_key=True)
 	name = db.Column(db.String(25))
 	# unfertig
-
+	
 # init of tabels
 db.create_all()
