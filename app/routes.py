@@ -31,14 +31,14 @@ if not User.query.filter(User.username == "guest").all():
         first_name = "Gast",
         last_name = "Coder Dojo",
         level = "pupil",
-        shool_class = "10B",
+        school_class = "10B",
         description = "Anonymous guest user"
     )
     db_session.add(user)
     db_session.commit()
 
 
-# this function is for form Processing
+# this functions are for form data
 def make_dict(request):
     values = list(request.form.values())
     keys = list(request.form.keys())
@@ -49,11 +49,29 @@ def make_dict(request):
         input.update({key:value})
     return input
 
+def check_lens(targets):
+    # The function is validating the length od inputs
+    # Structure targets =
+    # [{"target":string, "min_len":integer, "max_len":int}, more dicts]]
+    for i in range(len(targets)):
+        n = i -1
+        if len(targets[n]["target"]) > targets[n]["max_len"]:
+            error_report = {"target":targets[n]["target"], "error":1,
+             "max_len":targets[n]["max_len"]}
+            return error_report
+        elif len(targets[n]["target"]) < targets[n]["min_len"]:
+            error_report = {"target":targets[n]["target"], "error":2,
+            "min_len":targets[n]["min_len"]}
+            return error_report
+        else:
+            pass
+    return True
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "GET":
         try:
-            text = "Welcome " + current_user.username + " to the webpage"
+            text = "Welcome " + current_user.username + " to the webpage "
             return render_template("index.html", text=text)
         except:
             return render_template("index.html")
@@ -68,10 +86,15 @@ def index():
 @roles_required("Admin")
 def admin(method, username):
     if request.method == "GET":
+        if method == "edit":
+            s_user = User.query.filter_by(username=username).first_or_404()
+            return render_template("profile_specific_edit.html",
+            user=s_user)
+
         return render_template("admin.html", method=method, username=username, \
         type="action")
 
-@app.route("/admin")
+@app.route("/admin", methods=["GET", "POST"])
 @roles_required("Admin")
 def admin_dashboard():
     login = logins.query.order_by("time_pr desc").limit(5).all()
@@ -85,21 +108,67 @@ def add_user():
         return render_template("add_user.html", roles=roles_all)
 
     if request.method == "POST":
+        # Get the list for roles
         multiselect = request.form.getlist("roles")
-        user = User(
-        username = request.form["username"],
-        password = user_manager.hash_password(request.form["password"]),
-        first_name = request.form["first_name"],
-        last_name = request.form["last_name"],
-        )
-        user.roles = []
-        for i in range(len(multiselect)):
-            user.roles.append(Role(name=multiselect[i]))
-            print(str(i) + ": " + multiselect[i])
-        db.session.add(user)
-        db.session.commit()
-        flash("Add username: " + request.form["username"] + " sucessfully")
-        return redirect("/add-user")
+
+        # Check if username already exists
+        if not User.query.filter_by(username=request.form["username"]).first():
+            pass
+        else:
+            flash("Der Nutzername" +
+            request.form["username"] + " ist schon vergeben")
+            return redirect("/add-user")
+
+        # Seting the targets for check_lens with lengths from config.py
+        targets = [{"target":request.form["username"],
+        "min_len":app.config["USERNAME_MIN_LENGTH"],
+        "max_len":app.config["USERNAME_MAX_LENGTH"]},
+        {"target":request.form["password"],
+        "min_len":app.config["PASSWORD_MIN_LENGTH"],
+        "max_len":app.config["PASSWORD_MAX_LENGTH"]},
+        {"target":request.form["username"],
+        "min_len":app.config["USERNAME_MIN_LENGTH"],
+        "max_len":app.config["USERNAME_MAX_LENGTH"]},
+        {"target":request.form["first_name"],
+        "min_len":app.config["FIRST_NAME_MIN_LENGTH"],
+        "max_len":app.config["FIRST_NAME_MAX_LENGTH"]},
+        {"target":request.form["last_name"],
+        "min_len":app.config["LAST_NAME_MIN_LENGTH"],
+        "max_len":app.config["LAST_NAME_MAX_LENGTH"]}]
+        check = check_lens(targets)
+
+        if check == True:
+            user = User(
+            username = request.form["username"],
+            password = user_manager.hash_password(request.form["password"]),
+            first_name = request.form["first_name"],
+            last_name = request.form["last_name"],
+            )
+            db_session.add(user)
+            db_session.commit()
+            user = User.query.filter_by(username=request.form["username"]).first()
+            for i in range(len(multiselect)):
+                n = i - 1
+                role = Role.query.filter_by(name=multiselect[n]).first()
+                user_role = UserRoles(
+                user_id = user.id,
+                role_id = role.id
+                )
+                db_session.add(user_role)
+                db_session.commit()
+            flash("Der Nutzer " + request.form["username"] +
+             " wurde erfolgreich hinzugefügt")
+            return redirect("/add-user")
+        # If sth is to short/ long return and flash with note for min/ max len
+        else:
+            if check["error"] == 1:
+                flash(check["target"] + " ist zu lang (Maximal " +
+                 str(check["max_len"]) + " Zeichen)")
+                return redirect("/add-user")
+            elif check["error"] == 2:
+                flash(check["target"] + " ist zu kurz (Maximal " +
+                str(check["min_len"]) + " Zeichen)")
+                return redirect("/add-user")
 
 @app.route("/add-term", methods=["POST", "GET"])
 @roles_required("Admin")
@@ -122,7 +191,6 @@ def logins_view():
     if request.method == "POST":
         input = make_dict(request)
         login = logins.query.order_by("time_pr desc").limit(100).all()
-        print(input)
         return logins_view_specific(input["page"])
 
 @app.route("/logins/<page>")
@@ -131,6 +199,11 @@ def logins_view_specific(page):
     number = int(page) * 100 + 100
     login = logins.query.order_by("time_pr desc").limit(number).all()
     login_list = login[:number]
+    if int(page) < 0:
+        login = logins.query.order_by("time_pr desc").limit(100).all()
+        login_list = login[:100]
+        return render_template("logins_overview.html", logins=login_list,
+        current_page=0)
     return render_template("logins_overview.html", logins=login_list,
     current_page=int(page))
 
@@ -275,7 +348,6 @@ def about_us():
 def profile_specific(username):
     user_searched = User.query.filter_by(username=username).first_or_404()
     current_user_level = current_user.level
-    print(current_user_level)
     return render_template("profile_specific.html", user=user_searched, \
     logged_level=current_user_level )
 
@@ -287,6 +359,7 @@ def profile_redirect():
 @login_required
 def user_popup(username):
     user_searched = User.query.filter_by(username=username).first_or_404()
+    # active  = datenbank eintrag suchen ob 0/ 1
     return render_template("user_popup.html", user=user_searched)
 
 @app.route("/profile", methods=["GET", "POST"])
@@ -325,8 +398,19 @@ def report():
         return render_template("report.html")
 
     if request.method == "POST":
-        make_dict(request)
-        return ""
+        report = Reports(
+        user = request.form["sender"],
+        date = datetime.datetime.now(),
+        error = request.form["error_code"],
+        description = request.form["description"]
+        )
+        try:
+            db.add(report)
+            flash("Fehler gemeldet")
+            return redirect("/")
+        except:
+            print("Fehler")
+            return redirect("/")
 
 # Signals form flask user
 @user_logged_in.connect_via(app)
@@ -338,18 +422,19 @@ def _after_login_hook(sender, user, **extra):
 @user_logged_in.connect_via(app)
 def _track_logins(sender, user, **extra):
     user.last_login_ip = request.remote_addr
+    db.session.commit()
     login = logins(
     ip = user.last_login_ip,
     name = user.username,
     time = time.asctime(),
     time_pr = datetime.datetime.now()
     )
-    db.session.add(login)
-    db.session.commit()
+    db_session.add(login)
+    db_session.commit()
     return ""
 
 # Errorhandler pages
-# Use 500 errorhandler for security
+# Use 500 errorhandler for security, is ignored if debugging = True
 @app.errorhandler(500)
 def internal_server_error(e):
     er = "Serverfehler"

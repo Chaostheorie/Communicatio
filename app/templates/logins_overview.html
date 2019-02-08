@@ -18,7 +18,11 @@
 {% endfor %}
   </tbody>
 <tfoot class="tfoot-dark">
+      {% if current_page > 0 %}
       <td><a  href="/logins/{{ current_page - 1 }}" class="link">Vorherige Seite</a></td>
+      {% else %}
+      <td><td>
+      {% endif %}
       <td>
         {% if not pages %}
         {% else %}

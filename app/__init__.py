@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
@@ -7,14 +8,15 @@ from sqlalchemy.ext.declarative import declarative_base
 from elasticsearch import Elasticsearch
 from flask_user import UserManager
 from flask_babelex import Babel
+from flask_migrate import Migrate, upgrade
 
-# Init Flask
+# Initialize Flask
 app = Flask(__name__)
 
 # Load Configuration from Config.py's class "Config"
 app.config.from_object(Config)
 
-# Init of Database modules
+# Initalize of SQLAlchemy
 db = SQLAlchemy(app)
 
 # Initialize Flask-BabelEx
@@ -23,17 +25,27 @@ babel = Babel(app)
 # Initialize other things
 from app import models
 
-app.elasticsearch = Elasticsearch([app.config['ELASTICSEARCH_URL']])
-print("sucessfully Initialized")
+# Initalize Database Migrate
+migrate = Migrate(app, db)
+try:
+    # Autoupgrade if flask migrate is Initialized
+    with app.app_context():
+        upgrade(directory='migrations', revision='head', sql=False, tag=None)
+except:
+    pass
+# Initalize Elasticsearch
+app.elasticsearch = Elasticsearch([app.config["ELASTICSEARCH_URL"]])
 
+# Initalize Search mechanism + mixin
 from app import search, mixin
 
-# the db_session is a custom sessions for the case a modified session is needed
-# in use for a custom search part with pure SQLAlchemy for the session
+# The session is used for none type objekt transferring (add user, static Users)
+# Also for other methods, where an modified session is usefull/ needed
 engine = create_engine('sqlite:///app/static/database/VKS_main.sqlite',
- convert_unicode=True)
+ convert_unicode=True or os.path.join(basedir, "VKS_Fallback.sqlite"))
 db_session = scoped_session(sessionmaker(autocommit=False,
                                          autoflush=False,
                                          bind=engine))
 
+# Initalize Routes
 from app import routes

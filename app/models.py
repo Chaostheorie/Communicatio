@@ -21,15 +21,15 @@ class User(db.Model, UserMixin, SearchableMixin):
 	password = db.Column(db.String(255), nullable=False)
 
 	# User information
-	first_name = db.Column(db.String(100), nullable=False, server_default='')
-	last_name = db.Column(db.String(100), nullable=False, server_default='')
+	first_name = db.Column(db.String(int(app.config["FIRST_NAME_MAX_LENGTH"])), nullable=False, server_default='')
+	last_name = db.Column(db.String(int(app.config["LAST_NAME_MAX_LENGTH"])), nullable=False, server_default='')
 	active = db.Column("is_active", db.Boolean(), nullable=False, server_default="1")
-	last_seen = db.Column(db.String(100), nullable=False, server_default="unknown")
+	last_seen = db.Column(db.String(100))
+	login_count = db.Column(db.Integer())
 	level = db.Column(db.String(100))
 	level_specific = db.Column(db.String(100), server_default="")
 	description = db.Column(db.String(255))
-	shool_class = db.Column(db.String(10))
-
+	school_class = db.Column(db.String(10))
 	# Relationships
 	roles = db.relationship('Role', secondary='user_roles', \
 	backref = db.backref('user', lazy='dynamic'))
@@ -79,14 +79,21 @@ class terms(db.Model, SearchableMixin):
 	destination_day = db.Column(db.String(20), server_default="")
 	description = db.Column(db.Text(), server_default="")
 
-class logins(db.Model):
+class logins(db.Model, SearchableMixin):
 	__tablename__ = "logins"
-	__searchable__ = ["time", "name", "user_id"]
+	__searchable__ = ["time", "name", "ip"]
 	id = db.Column(db.Integer(), primary_key=True)
 	name = db.Column(db.String(255), server_default="")
 	time_pr = db.Column(db.DateTime())
 	time = db.Column(db.String(20), server_default="")
 	ip = db.Column(db.String(255), server_default="")
 
+class Reports(db.Model, SearchableMixin):
+	__tablename__ = "Reports"
+	__searchable__ = ["user", "date", "error"]
+	id = db.Column(db.Integer(), primary_key=True)
+	name = db.Column(db.String(25))
+	# unfertig
+	
 # init of tabels
 db.create_all()

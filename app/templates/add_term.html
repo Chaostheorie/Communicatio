@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block app_content %}
+<p>
+  <form action="add-term" method="post" >
+    <div class="form-group">
+      <input typr="text" class="form-control" name="name" placeholder="Name" required>
+    </div>
+  </form>
+</p>
+{% endblock %}
