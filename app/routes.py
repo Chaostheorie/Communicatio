@@ -9,8 +9,9 @@ import time, datetime
 #setup user manager
 user_manager = UserManager(app, db, User)
 
-# add admin for testing if not added yet
+# Check if admin and guest User already exists
 if not User.query.filter(User.username == "Admin").all():
+    # If it doesn't the admin user will be created
     user = User(
         username = "Admin",
         password = user_manager.hash_password("Password1"),
@@ -52,9 +53,11 @@ def make_dict(request):
 def check_lens(targets):
     # The function is validating the length od inputs
     # Structure targets =
-    # [{"target":string, "min_len":integer, "max_len":int}, more dicts]]
+    # [{"target":string, "min_len":integer, "max_len":integer}, more dicts]
+    # Returns True or a dict with Error and allowed max/ min length
     for i in range(len(targets)):
-        n = i -1
+        # n is used because i is outranging the list
+        n = i - 1
         if len(targets[n]["target"]) > targets[n]["max_len"]:
             error_report = {"target":targets[n]["target"], "error":1,
              "max_len":targets[n]["max_len"]}
@@ -67,21 +70,25 @@ def check_lens(targets):
             pass
     return True
 
+# Index is used for post search with the navbar forms and the profile search
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "GET":
+        # Try to Say Welcome, if a user is alread logged in
         try:
-            text = "Welcome " + current_user.username + " to the webpage "
+            text = "Willkommen " + current_user.username + " auf der Website "
             return render_template("index.html", text=text)
         except:
             return render_template("index.html")
 
     if request.method == "POST":
+        # Declare the search params for the post searchs
         type = "specific"
         spdict = ""
         return_url = request.referrer or "/"
         return search_results(request, type, spdict, return_url)
 
+# The admin post variant is at this state not usable
 @app.route("/admin/<method>/<username>", methods=["GET", "POST"])
 @roles_required("Admin")
 def admin(method, username):
@@ -94,12 +101,15 @@ def admin(method, username):
         return render_template("admin.html", method=method, username=username, \
         type="action")
 
+# Shows last 5 Logins and will featuring in upcoming versions a load based
+# Dashboard
 @app.route("/admin", methods=["GET", "POST"])
 @roles_required("Admin")
 def admin_dashboard():
     login = logins.query.order_by("time_pr desc").limit(5).all()
     return render_template("admin.html", logins=login, type="view")
 
+# Add User allows the Admin to add other Users with Roles
 @app.route("/add-user", methods=["POST", "GET"])
 @roles_required("Admin")
 def add_user():
@@ -137,6 +147,7 @@ def add_user():
         "max_len":app.config["LAST_NAME_MAX_LENGTH"]}]
         check = check_lens(targets)
 
+        # If everything is okay the user will be created
         if check == True:
             user = User(
             username = request.form["username"],
@@ -170,6 +181,7 @@ def add_user():
                 str(check["min_len"]) + " Zeichen)")
                 return redirect("/add-user")
 
+# Not at this point usable
 @app.route("/add-term", methods=["POST", "GET"])
 @roles_required("Admin")
 def add_term():
@@ -180,6 +192,7 @@ def add_term():
         new_term = make_dict(request)
         return redirect("/add-term")
 
+# Overview of al Log ins for tracing or overview
 @app.route("/logins", methods=["GET", "POST"])
 @roles_required("Admin")
 def logins_view():
@@ -193,12 +206,16 @@ def logins_view():
         login = logins.query.order_by("time_pr desc").limit(100).all()
         return logins_view_specific(input["page"])
 
+# specific function for pages of logins
 @app.route("/logins/<page>")
 @roles_required("Admin")
 def logins_view_specific(page):
+    # Will take the page integer and make it to a number
     number = int(page) * 100 + 100
     login = logins.query.order_by("time_pr desc").limit(number).all()
+    # Short the list by number
     login_list = login[:number]
+    # If the page number is under 0 will be counted like page number is 0
     if int(page) < 0:
         login = logins.query.order_by("time_pr desc").limit(100).all()
         login_list = login[:100]
@@ -207,6 +224,7 @@ def logins_view_specific(page):
     return render_template("logins_overview.html", logins=login_list,
     current_page=int(page))
 
+# The view functions for the results of the search
 @app.route("/results")
 @login_required
 def search_results(request, type, spdict, return_url):
@@ -281,9 +299,6 @@ def search_results(request, type, spdict, return_url):
                 "avatar_url":avatar
                 }
                 profile_results.append(profile)
-            #if total == 0:
-            #    flash("Für diesen Suchbegriff wurde kein Ergebniss gefunden")
-            #    return redirect("/")
 
             return render_template("results.html", results=profile_results,
              text=text, result_type=result_type, len=len_s)
@@ -336,13 +351,27 @@ def search_results(request, type, spdict, return_url):
     return render_template("results.html", results=results, text=text, \
     result_type=result_type, len=len_s)
 
-# for later implementation and allowing url_for(*) to work
+# for custom info about owner/ hoster
+# Currently Disabled but can enabled via config
 @app.route("/about-us")
 def about_us():
-    flash("Noch nicht erstellt")
-    return_url = request.referrer or "/"
-    return redirect(return_url)
+    if app.config["ABOUT_US"] == True:
+        # If is enabled the programm is watching out for the config Variable
+        return render_template(app.config["ABOUT_US_TEMPLATE"])
 
+    # If is diasbled will raise 404 by connect
+    elif app.config["ABOUT_US"] == False:
+        er = "404"
+        return_url = request.referrer or "/"
+        return render_template("error.html", return_url=return_url, error=er)
+        
+    # If nothing is set or conifg is broken will raise 404
+    else:
+        er = "404"
+        return_url = request.referrer or "/"
+        return render_template("error.html", return_url=return_url, error=er)
+
+# Show user profile by username
 @app.route("/profile/<username>")
 @login_required
 def profile_specific(username):
@@ -351,15 +380,16 @@ def profile_specific(username):
     return render_template("profile_specific.html", user=user_searched, \
     logged_level=current_user_level )
 
+# Profile base page
 @app.route("/profile/")
 def profile_redirect():
     return profile_main()
 
+# For later implementation with hover user profile popups
 @app.route("/profile/<username>/popup")
 @login_required
 def user_popup(username):
     user_searched = User.query.filter_by(username=username).first_or_404()
-    # active  = datenbank eintrag suchen ob 0/ 1
     return render_template("user_popup.html", user=user_searched)
 
 @app.route("/profile", methods=["GET", "POST"])
@@ -374,6 +404,7 @@ def profile_main():
         return_url = request.referrer or "/"
         return search_results(request, type, spdict, return_url)
 
+# Makes an search for all terms/ entrys
 @app.route("/all_terms")
 @login_required
 def all_terms():
@@ -391,6 +422,7 @@ def all_entrys():
     return_url = request.referrer
     return search_results("", type, spdict, return_url)
 
+# For later error report support
 @app.route("/report", methods=["GET", "POST"])
 @login_required
 def report():
@@ -412,7 +444,9 @@ def report():
             print("Fehler")
             return redirect("/")
 
-# Signals form flask user
+# *Signals from flask user*
+
+# Welcome flash message
 @user_logged_in.connect_via(app)
 def _after_login_hook(sender, user, **extra):
     flash(user.username + " logged in")
@@ -421,17 +455,22 @@ def _after_login_hook(sender, user, **extra):
 # For recording of user logins
 @user_logged_in.connect_via(app)
 def _track_logins(sender, user, **extra):
-    user.last_login_ip = request.remote_addr
-    db.session.commit()
-    login = logins(
-    ip = user.last_login_ip,
-    name = user.username,
-    time = time.asctime(),
-    time_pr = datetime.datetime.now()
-    )
-    db_session.add(login)
-    db_session.commit()
-    return ""
+    # Check for config
+    # For geolocation suport watchout for python-geoip
+    if app.config["TRACE_LOGIN"] == True:
+        user.last_login_ip = request.remote_addr
+        db.session.commit()
+        login = logins(
+        ip = user.last_login_ip,
+        name = user.username,
+        time = time.asctime(),
+        time_pr = datetime.datetime.now()
+        )
+        db_session.add(login)
+        db_session.commit()
+        return ""
+    else:
+        pass
 
 # Errorhandler pages
 # Use 500 errorhandler for security, is ignored if debugging = True
@@ -441,6 +480,7 @@ def internal_server_error(e):
     return_url = request.referrer or "/"
     return render_template("error.html", return_url=return_url, error=er)
 
+# For custom 403/ 404 page replace the error.html and remove unused Variables
 @app.errorhandler(404)
 def page_not_found(e):
     return_url = request.referrer or "/"

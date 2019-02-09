@@ -15,7 +15,7 @@ class Config(object):
     # Avoids SQLAlchemy warning (Is usable for Database Debugging at SQLAlchemy)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    # Elasticsearch Url for Full text search in databse
+    # Elasticsearch Server Url for Full text search in databse
     ELASTICSEARCH_URL = "http://localhost:9200"
 
     # Flask-User settings
@@ -26,7 +26,7 @@ class Config(object):
     USER_ENABLE_CHANGE_PASSWORD = True
     USER_ENABLE_REGISTER = True
     USER_LOGIN_TEMPLATE =  "flask_user/login.html"
-    USER_REGISTER_TEMPLATE="flask_user/register.html"
+    USER_REGISTER_TEMPLATE= "flask_user/register.html"
 
     # Settings for user data validation and databse settings
     USERNAME_MAX_LENGTH = 100
@@ -34,8 +34,18 @@ class Config(object):
     FIRST_NAME_MAX_LENGTH = 100
     FIRST_NAME_MIN_LENGTH = 5
     LAST_NAME_MAX_LENGTH = 100
+
     LAST_NAME_MIN_LENGTH = 5
     # The Minimal Length of Password is not affecting
-    # the flask user registartion at this point
+    # the flask user registration at this point but is set at 6 by default
+    # We don't recommend set password length under 6
     PASSWORD_MIN_LENGTH = 6
     PASSWORD_MAX_LENGTH = 48
+
+    # Options for functions like login tracing etc.
+    # Is Set with Bol Values (True/ False)
+    TRACE_LOGIN = True
+    ABOUT_US = False
+
+    # Custom Templates for not by default enabled routes
+    ABOUT_US_TEMPLATE = ""
