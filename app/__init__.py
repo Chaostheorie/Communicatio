@@ -8,7 +8,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from elasticsearch import Elasticsearch
 from flask_user import UserManager
 from flask_babelex import Babel
-from flask_migrate import Migrate, upgrade
 
 # Initialize Flask
 app = Flask(__name__)
@@ -25,14 +24,21 @@ babel = Babel(app)
 # Initialize other things
 from app import models
 
-# Initalize Database Migrate
-migrate = Migrate(app, db)
-try:
-    # Autoupgrade if flask migrate is Initialized
-    with app.app_context():
-        upgrade(directory='migrations', revision='head', sql=False, tag=None)
-except:
+# Initalize Database Migrate if set to True in Config
+# At default it's set at False and must be manually activated
+# A guideline is at the github wiki
+if app.config["FLASK_MIGRATE"] == True:
+    from flask_migrate import Migrate, upgrade
+    migrate = Migrate(app, db)
+    try:
+        # try to Autoupgrade if flask migrate is activated
+        with app.app_context():
+            upgrade(directory='migrations', revision='head', sql=False, tag=None)
+    except:
+        pass
+else:
     pass
+
 # Initalize Elasticsearch
 app.elasticsearch = Elasticsearch([app.config["ELASTICSEARCH_URL"]])
 

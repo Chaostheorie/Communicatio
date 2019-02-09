@@ -55,6 +55,7 @@ class Config(object):
     # Is Set with Bol Values (True/ False)
     TRACE_LOGIN = True
     ABOUT_US = False
+    FLASK_MIGRATE = False
 
     # If you disable it the user with the name guest will deleted if it exists
     # If you enable before the first run nothing will happen
