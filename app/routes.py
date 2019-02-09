@@ -351,12 +351,25 @@ def search_results(request, type, spdict, return_url):
     return render_template("results.html", results=results, text=text, \
     result_type=result_type, len=len_s)
 
-# for later implementation and allowing url_for(*) to work
+# for custom info about owner/ hoster
+# Currently Disabled but can enabled via config
 @app.route("/about-us")
 def about_us():
-    flash("Noch nicht erstellt")
-    return_url = request.referrer or "/"
-    return redirect(return_url)
+    if app.config["ABOUT_US"] == True:
+        # If is enabled the programm is watching out for the config Variable
+        return render_template(app.config["ABOUT_US_TEMPLATE"])
+
+    # If is diasbled will raise 404 by connect
+    elif app.config["ABOUT_US"] == False:
+        er = "404"
+        return_url = request.referrer or "/"
+        return render_template("error.html", return_url=return_url, error=er)
+        
+    # If nothing is set or conifg is broken will raise 404
+    else:
+        er = "404"
+        return_url = request.referrer or "/"
+        return render_template("error.html", return_url=return_url, error=er)
 
 # Show user profile by username
 @app.route("/profile/<username>")
@@ -431,7 +444,8 @@ def report():
             print("Fehler")
             return redirect("/")
 
-# Signals from flask user
+# *Signals from flask user*
+
 # Welcome flash message
 @user_logged_in.connect_via(app)
 def _after_login_hook(sender, user, **extra):
@@ -441,17 +455,22 @@ def _after_login_hook(sender, user, **extra):
 # For recording of user logins
 @user_logged_in.connect_via(app)
 def _track_logins(sender, user, **extra):
-    user.last_login_ip = request.remote_addr
-    db.session.commit()
-    login = logins(
-    ip = user.last_login_ip,
-    name = user.username,
-    time = time.asctime(),
-    time_pr = datetime.datetime.now()
-    )
-    db_session.add(login)
-    db_session.commit()
-    return ""
+    # Check for config
+    # For geolocation suport watchout for python-geoip
+    if app.config["TRACE_LOGIN"] == True:
+        user.last_login_ip = request.remote_addr
+        db.session.commit()
+        login = logins(
+        ip = user.last_login_ip,
+        name = user.username,
+        time = time.asctime(),
+        time_pr = datetime.datetime.now()
+        )
+        db_session.add(login)
+        db_session.commit()
+        return ""
+    else:
+        pass
 
 # Errorhandler pages
 # Use 500 errorhandler for security, is ignored if debugging = True
@@ -461,6 +480,7 @@ def internal_server_error(e):
     return_url = request.referrer or "/"
     return render_template("error.html", return_url=return_url, error=er)
 
+# For custom 403/ 404 page replace the error.html and remove unused Variables
 @app.errorhandler(404)
 def page_not_found(e):
     return_url = request.referrer or "/"
