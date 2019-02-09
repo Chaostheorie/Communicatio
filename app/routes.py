@@ -24,20 +24,27 @@ if not User.query.filter(User.username == "Admin").all():
     user.roles.append(Role(name="Admin"))
     db_session.add(user)
     db_session.commit()
+if app.config["GUEST_USER"] == True:
+    if not User.query.filter(User.username == "guest").all():
+        user = User(
+            username = "guest",
+            password = user_manager.hash_password("Passwort"),
+            first_name = "Gast",
+            last_name = "Coder Dojo",
+            level = "pupil",
+            school_class = "10B",
+            description = "Anonymous guest user"
+            )
+        db_session.add(user)
+        db_session.commit()
 
-if not User.query.filter(User.username == "guest").all():
-    user = User(
-        username = "guest",
-        password = user_manager.hash_password("Passwort"),
-        first_name = "Gast",
-        last_name = "Coder Dojo",
-        level = "pupil",
-        school_class = "10B",
-        description = "Anonymous guest user"
-    )
-    db_session.add(user)
-    db_session.commit()
-
+elif app.config["GUEST_USER"] == False:
+    if not User.query.filter(User.username == "guest").all():
+        pass
+    else:
+        user = User.query.filter_by(username = "guest").first()
+        db_session.delete(user)
+        db_session.commit()
 
 # this functions are for form data
 def make_dict(request):
@@ -94,9 +101,9 @@ def index():
 def admin(method, username):
     if request.method == "GET":
         if method == "edit":
-            s_user = User.query.filter_by(username=username).first_or_404()
+            user = User.query.filter_by(username=username).first_or_404()
             return render_template("profile_specific_edit.html",
-            user=s_user)
+            user=user)
 
         return render_template("admin.html", method=method, username=username, \
         type="action")
@@ -124,6 +131,7 @@ def add_user():
         # Check if username already exists
         if not User.query.filter_by(username=request.form["username"]).first():
             pass
+
         else:
             flash("Der Nutzername" +
             request.form["username"] + " ist schon vergeben")
@@ -131,20 +139,20 @@ def add_user():
 
         # Seting the targets for check_lens with lengths from config.py
         targets = [{"target":request.form["username"],
-        "min_len":app.config["USERNAME_MIN_LENGTH"],
-        "max_len":app.config["USERNAME_MAX_LENGTH"]},
+        "min_len":app.config["USER_USERNAME_MIN_LEN"],
+        "max_len":app.config["USER_USERNAME_MAX_LEN"]},
         {"target":request.form["password"],
-        "min_len":app.config["PASSWORD_MIN_LENGTH"],
-        "max_len":app.config["PASSWORD_MAX_LENGTH"]},
+        "min_len":app.config["USER_PASSWORD_MIN_LEN"],
+        "max_len":app.config["USER_PASSWORD_MAX_LEN"]},
         {"target":request.form["username"],
-        "min_len":app.config["USERNAME_MIN_LENGTH"],
-        "max_len":app.config["USERNAME_MAX_LENGTH"]},
+        "min_len":app.config["USER_USERNAME_MIN_LEN"],
+        "max_len":app.config["USER_USERNAME_MAX_LEN"]},
         {"target":request.form["first_name"],
-        "min_len":app.config["FIRST_NAME_MIN_LENGTH"],
-        "max_len":app.config["FIRST_NAME_MAX_LENGTH"]},
+        "min_len":app.config["USER_FIRST_NAME_MIN_LEN"],
+        "max_len":app.config["USER_FIRST_NAME_MAX_LEN"]},
         {"target":request.form["last_name"],
-        "min_len":app.config["LAST_NAME_MIN_LENGTH"],
-        "max_len":app.config["LAST_NAME_MAX_LENGTH"]}]
+        "min_len":app.config["USER_LAST_NAME_MIN_LEN"],
+        "max_len":app.config["USER_LAST_NAME_MAX_LEN"]}]
         check = check_lens(targets)
 
         # If everything is okay the user will be created
@@ -364,7 +372,7 @@ def about_us():
         er = "404"
         return_url = request.referrer or "/"
         return render_template("error.html", return_url=return_url, error=er)
-        
+
     # If nothing is set or conifg is broken will raise 404
     else:
         er = "404"
