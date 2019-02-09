@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block app_content %}
+  {# The result html reacts to the result_type variable and change the layout #}
     {% if result_type=="term" or "broadcast" or "profile" %}
     <p>
       {{ text }}
