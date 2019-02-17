@@ -89,7 +89,7 @@ def index():
             return render_template("index.html")
 
     if request.method == "POST":
-        # Declare the search params for the post searchs
+        # Declare the search params for the post searchs with specific value
         type = "specific"
         spdict = ""
         return_url = request.referrer or "/"
@@ -259,9 +259,9 @@ def search_results(request, type, spdict, return_url):
                      " Ergebnisse gefunden:"
                 else:
                     text = "Es wurde " + str(len(entrys.query.all())) + \
-                     " Ergebniss gefunden: "
+                     " Ergebnis gefunden: "
                 if total == 0:
-                    flash("Für diesen Suchbegriff wurde kein Ergebniss \
+                    flash("Für diesen Suchbegriff wurde kein Ergebnis \
                      gefunden")
                     return redirect("/")
                 return render_template("results.html", results=results,
@@ -294,7 +294,8 @@ def search_results(request, type, spdict, return_url):
                      " Ergebnisse gefunden:"
             else:
                 text = "Es wurde " + str(len(User.query.all())) + \
-                 " Ergebniss gefunden: "
+                 " Ergebnis gefunden: "
+
             for result in results:
                 digest = hashlib.sha1(result.username.encode("utf-8")). \
                 hexdigest()
@@ -323,15 +324,15 @@ def search_results(request, type, spdict, return_url):
                      " Ergebnisse gefunden:"
                 else:
                     text = "Es wurde " + str(len(terms.query.all())) + \
-                     " Ergebniss gefunden: "
+                     " Ergebnis gefunden: "
                 if total == 0:
-                    flash("Für diesen Suchbegriff wurde kein Ergebniss \
+                    flash("Für diesen Suchbegriff wurde kein Ergebnis \
                      gefunden")
                     return redirect("/")
                 return render_template("results.html", results=results,
                 text=text, result_type=result_type)
         if total == 0:
-            flash("Für diesen Suchbegriff wurde kein Ergebniss gefunden")
+            flash("Für diesen Suchbegriff wurde kein Ergebnis gefunden")
             return redirect("/")
 
     if results[1] > 1:
@@ -339,7 +340,7 @@ def search_results(request, type, spdict, return_url):
          input["search"] + " gefunden:"
 
     elif results[1] == 1:
-        text = "Es wurde 1 Ergebniss für den Suchbegriff " + input["search"] + \
+        text = "Es wurde 1 Ergebnis für den Suchbegriff " + input["search"] + \
          " gefunden:"
 
     elif not results:
@@ -348,36 +349,23 @@ def search_results(request, type, spdict, return_url):
 
     if result_type == "profile":
         length = len(profile_results)
-        text = "Es wurde " + str(length) + " Ergebniss gefunden."
+        text = "Es wurde " + str(length) + " Ergebnis gefunden."
         if length > 1:
-            text = "Es wurde " + str(length) + " Ergebnisse gefunden."
+            text = "Es wurden " + str(length) + " Ergebnisse gefunden."
         return render_template("results.html", text=text, results = \
         profile_results, result_type=result_type, len=length)
     if total == 0:
-        flash("Für diesen Suchbegriff wurde kein Ergebniss gefunden")
+        flash("Für diesen Suchbegriff wurde kein Ergebnis gefunden")
         return redirect("/")
     return render_template("results.html", results=results, text=text, \
     result_type=result_type, len=len_s)
 
 # for custom info about owner/ hoster
 # Currently Disabled but can enabled via config
-@app.route("/about-us")
-def about_us():
-    if app.config["ABOUT_US"] == True:
-        # If is enabled the programm is watching out for the config Variable
+if app.config["ABOUT_US"] == True:
+    @app.route("/about-us")
+    def about_us():
         return render_template(app.config["ABOUT_US_TEMPLATE"])
-
-    # If is diasbled will raise 404 by connect
-    elif app.config["ABOUT_US"] == False:
-        er = "404"
-        return_url = request.referrer or "/"
-        return render_template("error.html", return_url=return_url, error=er)
-
-    # If nothing is set or conifg is broken will raise 404
-    else:
-        er = "404"
-        return_url = request.referrer or "/"
-        return render_template("error.html", return_url=return_url, error=er)
 
 # Show user profile by username
 @app.route("/profile/<username>")
@@ -460,16 +448,15 @@ def _after_login_hook(sender, user, **extra):
     flash(user.username + " logged in")
     return ""
 
-# For recording of user logins
-@user_logged_in.connect_via(app)
-def _track_logins(sender, user, **extra):
-    # Check for config
-    # For geolocation suport watchout for python-geoip
-    if app.config["TRACE_LOGIN"] == True:
-        user.last_login_ip = request.remote_addr
-        db.session.commit()
+# For recording of user logins if enabled
+if app.config["TRACE_LOGIN"] == True:
+    @user_logged_in.connect_via(app)
+    def _track_logins(sender, user, **extra):
+        # For geolocation suport watchout for python-geoip
+        # This functions could be used for user analysis or multilanguage
+        # support
         login = logins(
-        ip = user.last_login_ip,
+        ip = request.remote_addr,
         name = user.username,
         time = time.asctime(),
         time_pr = datetime.datetime.now()
@@ -477,10 +464,9 @@ def _track_logins(sender, user, **extra):
         db_session.add(login)
         db_session.commit()
         return ""
-    else:
-        pass
 
 # Errorhandler pages
+
 # Use 500 errorhandler for security, is ignored if debugging = True
 @app.errorhandler(500)
 def internal_server_error(e):

@@ -1,6 +1,4 @@
-from app.models import entrys, terms
-
-from app import app
+import app
 
 info = """
 ###########################
@@ -26,11 +24,5 @@ info = """
 """
 print(info)
 
-# Refresh the elasticsearch indicies
-from app.models import User, terms, entrys
-User.reindex()
-entrys.reindex()
-terms.reindex()
-
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.app.run(debug=True, host="0.0.0.0", port=5000)

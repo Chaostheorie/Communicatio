@@ -7,7 +7,6 @@ elasticsearch==6.3.1
 Flask-BabelEx==0.9.3
 Flask-User==1.0.1.5
 Flask-SQLAlchemy==2.3.2
-hashlib
 flask-migrate
 
 # some versions are not fixed yet

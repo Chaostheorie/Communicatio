@@ -8,7 +8,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from elasticsearch import Elasticsearch
 from flask_user import UserManager
 from flask_babelex import Babel
-
 # Initialize Flask
 app = Flask(__name__)
 
@@ -48,10 +47,15 @@ from app import search, mixin
 # The session is used for none type objekt transferring (add user, static Users)
 # Also for other methods, where an modified session is usefull/ needed
 engine = create_engine('sqlite:///app/static/database/VKS_main.sqlite',
- convert_unicode=True or os.path.join(basedir, "VKS_Fallback.sqlite"))
+    convert_unicode=True or os.path.join(basedir, "VKS_Fallback.sqlite"))
 db_session = scoped_session(sessionmaker(autocommit=False,
-                                         autoflush=False,
-                                         bind=engine))
+                                            autoflush=False,
+                                            bind=engine))
+# reindex
+from app.models import User, entrys, terms
+User.reindex()
+entrys.reindex()
+terms.reindex()
 
 # Initalize Routes
 from app import routes

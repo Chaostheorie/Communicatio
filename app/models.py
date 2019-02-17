@@ -29,15 +29,14 @@ class User(db.Model, UserMixin, SearchableMixin):
 	 nullable=False, server_default='')
 	active = db.Column("is_active", db.Boolean(), nullable=False, server_default="1")
 	last_seen = db.Column(db.String(100))
-	login_count = db.Column(db.Integer())
 	level = db.Column(db.String(100))
 	level_specific = db.Column(db.String(100), server_default="")
 	description = db.Column(db.String(255))
 	school_class = db.Column(db.String(10))
 
 	# Relationships
-	roles = db.relationship('Role', secondary='user_roles', \
-	backref = db.backref('user', lazy='dynamic'))
+	roles = db.relationship('Role', secondary='user_roles',
+		backref = db.backref('user', lazy='dynamic'))
 
 	def __repr__(self):
 		return '<User {}>'.format(self.username)

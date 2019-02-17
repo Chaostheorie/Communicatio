@@ -8,7 +8,8 @@ class Config(object):
     # change it before using in anything that could be attacked
     SECRET_KEY = "not_secrEt53454325_SecrT_kEy_chaNGe_8t_bef4re_us8ng_in_pr0duc"
 
-    # File-based SQLite3 database
+    # Database Url
+    # Default is a file based sqlite3 databse in the static/databse folder
     SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(basedir, "app/static/database/VKS_main.sqlite") or \
         "sqlite:///" + os.path.join(basedir, "VKS_Fallback.sqlite")
 
@@ -53,6 +54,7 @@ class Config(object):
 
     # Options for functions like login tracing etc.
     # Is Set with Bol Values (True/ False)
+    # The TRACE Functions are built for analysis of userdata
     TRACE_LOGIN = True
     ABOUT_US = False
     FLASK_MIGRATE = False
