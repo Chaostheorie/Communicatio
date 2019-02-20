@@ -6,7 +6,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from elasticsearch import Elasticsearch
-from flask_user import UserManager
 from flask_babelex import Babel
 # Initialize Flask
 app = Flask(__name__)
@@ -22,6 +21,11 @@ babel = Babel(app)
 
 # Initialize other things
 from app import models
+
+# Initalize of flask user
+from app.custom import *
+from app.models import User
+user_manager = CustomUserManager(app, db, User)
 
 # Initalize Database Migrate if set to True in Config
 # At default it's set at False and must be manually activated
@@ -51,6 +55,7 @@ engine = create_engine('sqlite:///app/static/database/VKS_main.sqlite',
 db_session = scoped_session(sessionmaker(autocommit=False,
                                             autoflush=False,
                                             bind=engine))
+
 # reindex
 from app.models import User, entrys, terms
 User.reindex()

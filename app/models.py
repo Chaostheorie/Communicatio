@@ -19,8 +19,7 @@ class User(db.Model, UserMixin, SearchableMixin):
 	# User authentication information
 	username = db.Column(db.String(app.config["USER_USERNAME_MAX_LEN"]),
 	 nullable=False, unique=True)
-	password = db.Column(db.String(app.config["USER_PASSWORD_MAX_LEN"]),
-	 nullable=False)
+	password = db.Column(db.String(), nullable=False)
 
 	# User information
 	first_name = db.Column(db.String(int(app.config["USER_FIRST_NAME_MAX_LEN"])),
@@ -28,6 +27,7 @@ class User(db.Model, UserMixin, SearchableMixin):
 	last_name = db.Column(db.String(int(app.config["USER_LAST_NAME_MAX_LEN"])),
 	 nullable=False, server_default='')
 	active = db.Column("is_active", db.Boolean(), nullable=False, server_default="1")
+	#is_enabled = db.Column(db.Boolean(), nullable=False, default=False)
 	last_seen = db.Column(db.String(100))
 	level = db.Column(db.String(100))
 	level_specific = db.Column(db.String(100), server_default="")
@@ -37,6 +37,10 @@ class User(db.Model, UserMixin, SearchableMixin):
 	# Relationships
 	roles = db.relationship('Role', secondary='user_roles',
 		backref = db.backref('user', lazy='dynamic'))
+
+	# Functions
+	#def is_active(self):
+	#	return self.is_enabled
 
 	def __repr__(self):
 		return '<User {}>'.format(self.username)
@@ -91,12 +95,12 @@ class logins(db.Model, SearchableMixin):
 	ip = db.Column(db.String(255), server_default="")
 
 class reports(db.Model, SearchableMixin):
-	__tablename__ = "reports"
+	__tablename__ = "Reports"
 	__searchable__ = ["user", "date", "error"]
 	id = db.Column(db.Integer(), primary_key=True)
 	name = db.Column(db.String(int(app.config["REPORT_NAME_MAX_LEN"])))
 	theme = db.Column(db.String(int(app.config["REPORT_THEME_MAX_LEN"])))
-	description = db.Column(db.String(int(app.config["REPORT_DESC_MAX_LEN"])))
+	description = db.Column(db.String(app.config["REPORT_DESC_MAX_LEN"]))
 	sender = db.Column(db.String(int(app.config["USER_USERNAME_MAX_LEN"])))
 
 # init of tabels

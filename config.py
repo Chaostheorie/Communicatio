@@ -26,6 +26,9 @@ class Config(object):
     USER_ENABLE_CHANGE_USERNAME = True
     USER_ENABLE_CHANGE_PASSWORD = True
     USER_ENABLE_REGISTER = True
+    # the retype password field is not supported but could be used with default
+    # flask user settings
+    USER_REQUIRE_RETYPE_PASSWORD = False
     USER_LOGIN_TEMPLATE =  "flask_user/login.html"
     USER_REGISTER_TEMPLATE= "flask_user/register.html"
 
@@ -39,7 +42,6 @@ class Config(object):
     USER_FIRST_NAME_MIN_LEN = 5
     USER_LAST_NAME_MAX_LEN = 100
     USER_LAST_NAME_MIN_LEN = 5
-    USER_PASSWORD_MAX_LEN = 255
     USER_PASSWORD_MIN_LEN = 6
 
     # Settings for report databse Settings and form validation
@@ -57,7 +59,7 @@ class Config(object):
     # The TRACE Functions are built for analysis of userdata
     TRACE_LOGIN = True
     ABOUT_US = False
-    FLASK_MIGRATE = False
+    FLASK_MIGRATE = True
 
     # If you disable it the user with the name guest will deleted if it exists
     # If you enable before the first run nothing will happen
