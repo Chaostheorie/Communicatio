@@ -1,12 +1,12 @@
 import os
 from flask import Flask
 from config import Config
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from elasticsearch import Elasticsearch
 from flask_babelex import Babel
+from flask_sqlalchemy import SQLAlchemy
 # Initialize Flask
 app = Flask(__name__)
 
@@ -15,6 +15,15 @@ app.config.from_object(Config)
 
 # Initalize of SQLAlchemy
 db = SQLAlchemy(app)
+# The session object is replaced with a custom session, because the custom
+# Session allows to use enable transaction of None Type objects for user Obj
+# Without overwritting flask sqlalchemy
+engine = create_engine('sqlite:///app/static/database/VKS_main.sqlite',
+    convert_unicode=True or os.path.join(basedir, "VKS_Fallback.sqlite"))
+db_session = scoped_session(sessionmaker(autocommit=False,
+                                            autoflush=False,
+                                            bind=engine))
+db.session = db_session
 
 # Initialize Flask-BabelEx
 babel = Babel(app)
@@ -47,14 +56,6 @@ app.elasticsearch = Elasticsearch([app.config["ELASTICSEARCH_URL"]])
 
 # Initalize Search mechanism + mixin
 from app import search, mixin
-
-# The session is used for none type objekt transferring (add user, static Users)
-# Also for other methods, where an modified session is usefull/ needed
-engine = create_engine('sqlite:///app/static/database/VKS_main.sqlite',
-    convert_unicode=True or os.path.join(basedir, "VKS_Fallback.sqlite"))
-db_session = scoped_session(sessionmaker(autocommit=False,
-                                            autoflush=False,
-                                            bind=engine))
 
 # reindex
 from app.models import User, entrys, terms

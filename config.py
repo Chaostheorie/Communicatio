@@ -32,10 +32,7 @@ class Config(object):
     USER_LOGIN_TEMPLATE =  "flask_user/login.html"
     USER_REGISTER_TEMPLATE= "flask_user/register.html"
 
-    # Settings for user data validation and databse settings
-    # The Minimal length of the Password is not affecting
-    # the flask user registration at this point but is set at 6 by default
-    # We don't recommend set password length under 6
+    # Settings for user data registartion validation and database settings
     USER_USERNAME_MAX_LEN = 100
     USER_USERNAME_MIN_LEN = 5
     USER_FIRST_NAME_MAX_LEN = 100

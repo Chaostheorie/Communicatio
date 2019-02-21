@@ -3,11 +3,9 @@ from app import *
 from app.mixin import *
 from app.models import *
 from flask_user import *
+from app.custom import *
 from flask_sqlalchemy import *
 import time, datetime
-
-#setup user manager
-user_manager = UserManager(app, db, User)
 
 # Check if admin and guest User already exists
 if not User.query.filter(User.username == "Admin").all():
@@ -22,8 +20,8 @@ if not User.query.filter(User.username == "Admin").all():
         description = "The admin of the Project."
     )
     user.roles.append(Role(name="Admin"))
-    db_session.add(user)
-    db_session.commit()
+    db.session.add(user)
+    db.session.commit()
 if app.config["GUEST_USER"] == True:
     if not User.query.filter(User.username == "guest").all():
         user = User(
@@ -35,16 +33,16 @@ if app.config["GUEST_USER"] == True:
             school_class = "10B",
             description = "Anonymous guest user"
             )
-        db_session.add(user)
-        db_session.commit()
+        db.session.add(user)
+        db.session.commit()
 
 elif app.config["GUEST_USER"] == False:
     if not User.query.filter(User.username == "guest").all():
         pass
     else:
         user = User.query.filter_by(username = "guest").first()
-        db_session.delete(user)
-        db_session.commit()
+        db.session.delete(user)
+        db.session.commit()
 
 # this functions are for form data
 def make_dict(request):
@@ -62,17 +60,25 @@ def check_lens(targets):
     # Structure targets =
     # [{"target":string, "min_len":integer, "max_len":integer}, more dicts]
     # Returns True or a dict with Error and allowed max/ min length
+    # If any len param is False the test for this param of the target will be
+    # pased
     for i in range(len(targets)):
         # n is used because i is outranging the list
         n = i - 1
-        if len(targets[n]["target"]) > targets[n]["max_len"]:
+        if targets[n]["max_len"] == False:
+            pass
+        elif len(targets[n]["target"]) > targets[n]["max_len"]:
             error_report = {"target":targets[n]["target"], "error":1,
              "max_len":targets[n]["max_len"]}
             return error_report
+
+        if targets[n]["min_len"] == False:
+            pass
         elif len(targets[n]["target"]) < targets[n]["min_len"]:
             error_report = {"target":targets[n]["target"], "error":2,
             "min_len":targets[n]["min_len"]}
             return error_report
+
         else:
             pass
     return True
@@ -137,13 +143,13 @@ def add_user():
             request.form["username"] + " ist schon vergeben")
             return redirect("/add-user")
 
-        # Seting the targets for check_lens with lengths from config.py
+        # Seting the targets for check_lens with lengths from config
         targets = [{"target":request.form["username"],
         "min_len":app.config["USER_USERNAME_MIN_LEN"],
         "max_len":app.config["USER_USERNAME_MAX_LEN"]},
         {"target":request.form["password"],
         "min_len":app.config["USER_PASSWORD_MIN_LEN"],
-        "max_len":app.config["USER_PASSWORD_MAX_LEN"]},
+        "max_len":False},
         {"target":request.form["username"],
         "min_len":app.config["USER_USERNAME_MIN_LEN"],
         "max_len":app.config["USER_USERNAME_MAX_LEN"]},
@@ -163,8 +169,8 @@ def add_user():
             first_name = request.form["first_name"],
             last_name = request.form["last_name"],
             )
-            db_session.add(user)
-            db_session.commit()
+            db.session.add(user)
+            db.session.commit()
             user = User.query.filter_by(username=request.form["username"]).first()
             for i in range(len(multiselect)):
                 n = i - 1
@@ -173,8 +179,8 @@ def add_user():
                 user_id = user.id,
                 role_id = role.id
                 )
-                db_session.add(user_role)
-                db_session.commit()
+                db.session.add(user_role)
+                db.session.commit()
             flash("Der Nutzer " + request.form["username"] +
              " wurde erfolgreich hinzugefügt")
             return redirect("/add-user")
@@ -185,7 +191,7 @@ def add_user():
                  str(check["max_len"]) + " Zeichen)")
                 return redirect("/add-user")
             elif check["error"] == 2:
-                flash(check["target"] + " ist zu kurz (Maximal " +
+                flash(check["target"] + " ist zu kurz (Minimal " +
                 str(check["min_len"]) + " Zeichen)")
                 return redirect("/add-user")
 
@@ -461,8 +467,8 @@ if app.config["TRACE_LOGIN"] == True:
         time = time.asctime(),
         time_pr = datetime.datetime.now()
         )
-        db_session.add(login)
-        db_session.commit()
+        db.session.add(login)
+        db.session.commit()
         return ""
 
 # Errorhandler pages
