@@ -5,19 +5,8 @@ from sqlalchemy.orm.session import Session as SessionBase
 from flask_sqlalchemy import *
 from app import app, db
 
-#setup user manager
-class CustomDbAdapter(DbAdapterInterface):
-    def commit(self):
-        """Commit session-based objects to the database."""
-        try:
-            self.db_adapter.commit()
-        except:
-            pass
 
 class CustomUserManager(UserManager):
-    def customize(self, app):
-        self.db_adapter = CustomDbAdapter(app, db)
-
     def username_validator(self, form, field):
         username = field.data
 
@@ -59,3 +48,7 @@ class CustomUserManager(UserManager):
         if not is_valid:
             raise ValidationError(
                 ("Passwörter müssen mindestens " + str(app.config["USER_PASSWORD_MIN_LEN"]) + " Zeichen lang sein sowie einen Kleinbuchstaben, einen Großbuchstaben und eine Zahl enthalten"))
+
+    def hash_password(self, password):
+        """Convenience method that calls self.password_manager.hash_password(password)."""
+        return self.password_manager.hash_password(password)

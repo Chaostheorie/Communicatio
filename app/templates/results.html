@@ -12,29 +12,39 @@
         </div>
       </p>
     {% endif %}
-      <table class="table">
-          {% if result_type=="term" %}
-          <thead class="thead-dark">
-            <tr>
-              <th scope="col">Name</th>
-              <th scope="col">Tag</th>
-              <th scope="col">Beschreibung</th>
-            </tr>
-            </thead>
-            {% for result in results %}
-            <tbody>
-              <tr>
-                <td scope="row">{{ result.name }}</td>
-                <td>{{ result.destination_day }}</td>
-                {% if result.description == None %}
-                  <td> Nicht Vorhanden </td>
-                {% else %}
-                  <td> {{ result.description }} </td>
-                {% endif %}
-                </tr>
-            </tbody>
-            {% endfor %}
-          {% endif %}
+    {% if result_type=="term" %}
+          {% for result in results %}
+          <div class="container">
+            <div class="row">
+              <div class="col-sm">
+                <h5>{{ result.name }}</h5>
+              </div>
+              <div class="col-sm">
+                <h5>{{ result.destination_day }}</h5>
+              </div>
+            </div>
+            {% if result.author == None %}
+            {# Nothing Should happen #}
+            {% else %}
+            <div class="row">
+              <div class="col-sm">
+                Erstellt von: <a href="/profile/{{ result.author }}" class="alert-link"> {{ result.author}} </a>
+              </div>
+            </div>
+            {% endif %}
+            {% if result.description == None %}
+            {# Nothing Should happen #}
+            {% else %}
+            <div class="row">
+              <div class="col-sm">
+              {{ result.description }}
+              </div>
+            </div>
+            {% endif %}
+          </div>
+          <hr>
+          {% endfor %}
+        {% endif %}
           {% if result_type == "broadcast" %}
           <thead class="thead-dark">
             <th scope="col">Name</th>
@@ -56,7 +66,12 @@
               <table>
                 <tr valign="top">
                   <td><a href="/profile/{{ results[i]["username"] }}"><img src="{{ results[i]["avatar_url"] }}" class="img-thumbnail" alt="Avatar of {{ results[i]["username"] }}" ></a></td>
-                  <td><a href="/profile/{{ results[i]["username"] }}" class="badge badge-light">{{ results[i]["username"] }} </a><br>{{ results[i]["last_name"] }}, {{ results[i]["first_name"] }}</td>
+                  <td><a href="/profile/{{ results[i]["username"] }}" class="badge badge-light">{{ results[i]["username"] }} </a>
+                    {% if results[i]["last_name"] == None %}
+                    {% elif results[i]["first_name"] == None %}
+                    {% else %}
+                    <br>{{ results[i]["last_name"] }}, {{ results[i]["first_name"] }}</td>
+                    {% endif %}
                 </tr>
               </table>
               {% endfor %}

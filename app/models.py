@@ -22,10 +22,8 @@ class User(db.Model, UserMixin, SearchableMixin):
 	password = db.Column(db.String(), nullable=False)
 
 	# User information
-	first_name = db.Column(db.String(int(app.config["USER_FIRST_NAME_MAX_LEN"])),
-	 nullable=False, server_default='')
-	last_name = db.Column(db.String(int(app.config["USER_LAST_NAME_MAX_LEN"])),
-	 nullable=False, server_default='')
+	first_name = db.Column(db.String(int(app.config["USER_FIRST_NAME_MAX_LEN"])))
+	last_name = db.Column(db.String(int(app.config["USER_LAST_NAME_MAX_LEN"])))
 	active = db.Column("is_active", db.Boolean(), nullable=False, server_default="1")
 	#is_enabled = db.Column(db.Boolean(), nullable=False, default=False)
 	last_seen = db.Column(db.String(100))

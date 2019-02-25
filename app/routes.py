@@ -2,9 +2,9 @@ from flask import *
 from app import *
 from app.mixin import *
 from app.models import *
-from flask_user import *
 from app.custom import *
 from flask_sqlalchemy import *
+from flask_user import login_required, roles_required, user_logged_in, current_user
 import time, datetime
 
 # Check if admin and guest User already exists
@@ -20,8 +20,8 @@ if not User.query.filter(User.username == "Admin").all():
         description = "The admin of the Project."
     )
     user.roles.append(Role(name="Admin"))
-    db.session.add(user)
-    db.session.commit()
+    db_session.add(user)
+    db_session.commit()
 if app.config["GUEST_USER"] == True:
     if not User.query.filter(User.username == "guest").all():
         user = User(
@@ -33,16 +33,16 @@ if app.config["GUEST_USER"] == True:
             school_class = "10B",
             description = "Anonymous guest user"
             )
-        db.session.add(user)
-        db.session.commit()
+        db_session.add(user)
+        db_session.commit()
 
 elif app.config["GUEST_USER"] == False:
     if not User.query.filter(User.username == "guest").all():
         pass
     else:
         user = User.query.filter_by(username = "guest").first()
-        db.session.delete(user)
-        db.session.commit()
+        db_session.delete(user)
+        db_session.commit()
 
 # this functions are for form data
 def make_dict(request):
@@ -61,7 +61,7 @@ def check_lens(targets):
     # [{"target":string, "min_len":integer, "max_len":integer}, more dicts]
     # Returns True or a dict with Error and allowed max/ min length
     # If any len param is False the test for this param of the target will be
-    # pased
+    # passed
     for i in range(len(targets)):
         # n is used because i is outranging the list
         n = i - 1
@@ -169,8 +169,8 @@ def add_user():
             first_name = request.form["first_name"],
             last_name = request.form["last_name"],
             )
-            db.session.add(user)
-            db.session.commit()
+            db_session.add(user)
+            db_session.commit()
             user = User.query.filter_by(username=request.form["username"]).first()
             for i in range(len(multiselect)):
                 n = i - 1
@@ -179,8 +179,8 @@ def add_user():
                 user_id = user.id,
                 role_id = role.id
                 )
-                db.session.add(user_role)
-                db.session.commit()
+                db_session.add(user_role)
+                db_session.commit()
             flash("Der Nutzer " + request.form["username"] +
              " wurde erfolgreich hinzugefügt")
             return redirect("/add-user")
@@ -258,8 +258,8 @@ def search_results(request, type, spdict, return_url):
         entrys.reindex()
         results = query, total = entrys.search(input["search"], 1, 100)
         if input["search"] == "":
-                qry = db.session.query(entrys)
-                results = qry.all()
+                results = db_session.query(entrys).all()
+                total = len(results)
                 if len(entrys.query.all()) > 1:
                     text = " Es wurden " + str(len(entrys.query.all())) + \
                      " Ergebnisse gefunden:"
@@ -292,7 +292,7 @@ def search_results(request, type, spdict, return_url):
             profile_results.append(profile)
 
         if input["search"] == "":
-            results = db.session.query(User).order_by(User.username).all()
+            results = db_session.query(User).order_by(User.username).all()
             len_s = len(results)
             profile_results = []
             if len(User.query.all()) > 1:
@@ -324,13 +324,15 @@ def search_results(request, type, spdict, return_url):
         results = query, total = terms.search(input["search"], 1, 100)
         result_type = input["type"]
         if input["search"] == "":
-                results = db.session.query(terms).all()
+                results = db_session.query(terms).all()
                 if len(terms.query.all()) > 1:
                     text = " Es wurden " + str(len(terms.query.all())) + \
                      " Ergebnisse gefunden:"
+
                 else:
                     text = "Es wurde " + str(len(terms.query.all())) + \
                      " Ergebnis gefunden: "
+
                 if total == 0:
                     flash("Für diesen Suchbegriff wurde kein Ergebnis \
                      gefunden")
@@ -360,6 +362,7 @@ def search_results(request, type, spdict, return_url):
             text = "Es wurden " + str(length) + " Ergebnisse gefunden."
         return render_template("results.html", text=text, results = \
         profile_results, result_type=result_type, len=length)
+    total = len(results)
     if total == 0:
         flash("Für diesen Suchbegriff wurde kein Ergebnis gefunden")
         return redirect("/")
@@ -467,8 +470,8 @@ if app.config["TRACE_LOGIN"] == True:
         time = time.asctime(),
         time_pr = datetime.datetime.now()
         )
-        db.session.add(login)
-        db.session.commit()
+        db_session.add(login)
+        db_session.commit()
         return ""
 
 # Errorhandler pages
@@ -476,9 +479,8 @@ if app.config["TRACE_LOGIN"] == True:
 # Use 500 errorhandler for security, is ignored if debugging = True
 @app.errorhandler(500)
 def internal_server_error(e):
-    er = "Serverfehler"
-    return_url = request.referrer or "/"
-    return render_template("error.html", return_url=return_url, error=er)
+    flash("Serverfehler")
+    return redirect("/")
 
 # For custom 403/ 404 page replace the error.html and remove unused Variables
 @app.errorhandler(404)
