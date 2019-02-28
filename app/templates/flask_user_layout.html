@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block app_content %}
+    {% block main %}
+        {% block content %}{% endblock %}
+    {% endblock %}
+    {% block footer %}
+    <br/>
+    <hr class="no-margins"/>
+    <div id="footer-div" class="clearfix with-margins">
+        <div class="pull-left">{{ user_manager.USER_APP_NAME }} v0.01</div>
+        <div class="pull-right">&copy; <a href="https://github.com/Chaostheorie" class="text-muted text-decoration-none">Chaostheorie</a></div>
+    </div>
+    {% endblock %}
+
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+
+    {# *** Allow sub-templates to insert extra html to the bottom of the body *** #}
+    {% block extra_js %}{% endblock %}
+{% endblock %}

@@ -10,30 +10,35 @@ class User(db.Model, UserMixin, SearchableMixin):
 
 	id = db.Column(db.Integer, primary_key=True)
 
-	# User avatar
+	# User avatar (identicon) generated via a hash of the username
 	def avatar(self, size):
 		digest = hashlib.sha1(self.username.encode("utf-8")).hexdigest()
 		return "https://www.gravatar.com/avatar/{}?d=identicon&s={}".format(
 		digest, size)
 
 	# User authentication information
-	username = db.Column(db.String(50), nullable=False, unique=True)
-	password = db.Column(db.String(255), nullable=False)
+	username = db.Column(db.String(app.config["USER_USERNAME_MAX_LEN"]),
+	 nullable=False, unique=True)
+	password = db.Column(db.String(), nullable=False)
 
 	# User information
-	first_name = db.Column(db.String(100), nullable=False, server_default='')
-	last_name = db.Column(db.String(100), nullable=False, server_default='')
+	first_name = db.Column(db.String(int(app.config["USER_FIRST_NAME_MAX_LEN"])))
+	last_name = db.Column(db.String(int(app.config["USER_LAST_NAME_MAX_LEN"])))
 	active = db.Column("is_active", db.Boolean(), nullable=False, server_default="1")
-	last_seen = db.Column(db.String(100), nullable=False, server_default="unknown")
+	#is_enabled = db.Column(db.Boolean(), nullable=False, default=False)
+	last_seen = db.Column(db.String(100))
 	level = db.Column(db.String(100))
 	level_specific = db.Column(db.String(100), server_default="")
 	description = db.Column(db.String(255))
-	shool_class = db.Column(db.String(10))
+	school_class = db.Column(db.String(10))
 
 	# Relationships
-	roles = db.relationship('Role', secondary='user_roles', \
-	backref = db.backref('user', lazy='dynamic'))
+	roles = db.relationship('Role', secondary='user_roles',
+		backref = db.backref('user', lazy='dynamic'))
 
+	# Functions
+	#def is_active(self):
+	#	return self.is_enabled
 
 	def __repr__(self):
 		return '<User {}>'.format(self.username)
@@ -53,7 +58,6 @@ class UserRoles(db.Model):
 	user_id = db.Column(db.Integer(), db.ForeignKey('user.id', ondelete='CASCADE'))
 	role_id = db.Column(db.Integer(), db.ForeignKey('role.id', ondelete='CASCADE'))
 
-
 # Define the Entry Model with custom SearchableMixin
 # creation date/ time are only for full time view
 class entrys(db.Model, SearchableMixin):
@@ -64,7 +68,7 @@ class entrys(db.Model, SearchableMixin):
 	name = db.Column(db.String(150), server_default="")
 	creation_date = db.Column(db.String(20), server_default="")
 	creation_time = db.Column(db.String(), server_default="")
-	content = db.Column(db.Text(), server_default="")
+	content = db.Column(db.String(), server_default="")
 
 # Define the Term Model with custom SearchableMixin
 # creation date/ time are only for full view
@@ -79,14 +83,23 @@ class terms(db.Model, SearchableMixin):
 	destination_day = db.Column(db.String(20), server_default="")
 	description = db.Column(db.Text(), server_default="")
 
-class logins(db.Model):
+class logins(db.Model, SearchableMixin):
 	__tablename__ = "logins"
-	__searchable__ = ["time", "name", "user_id"]
+	__searchable__ = ["time", "name", "ip"]
 	id = db.Column(db.Integer(), primary_key=True)
 	name = db.Column(db.String(255), server_default="")
 	time_pr = db.Column(db.DateTime())
 	time = db.Column(db.String(20), server_default="")
 	ip = db.Column(db.String(255), server_default="")
+
+class reports(db.Model, SearchableMixin):
+	__tablename__ = "Reports"
+	__searchable__ = ["user", "date", "error"]
+	id = db.Column(db.Integer(), primary_key=True)
+	name = db.Column(db.String(int(app.config["REPORT_NAME_MAX_LEN"])))
+	theme = db.Column(db.String(int(app.config["REPORT_THEME_MAX_LEN"])))
+	description = db.Column(db.String(app.config["REPORT_DESC_MAX_LEN"]))
+	sender = db.Column(db.String(int(app.config["USER_USERNAME_MAX_LEN"])))
 
 # init of tabels
 db.create_all()
