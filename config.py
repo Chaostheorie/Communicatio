@@ -4,6 +4,10 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config(object):
+    # App infos
+    APP_VERSION = "Beta 0.0.2"
+    APP_NAME = "Communicatio"
+
     # Secret key for sessions of flask users
     # change it before using in anything that could be attacked
     SECRET_KEY = "not_secrEt53454325_SecrT_kEy_chaNGe_8t_bef4re_us8ng_in_pr0duc"
