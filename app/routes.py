@@ -206,6 +206,25 @@ def add_term():
         new_term = make_dict(request)
         return redirect("/add-term")
 
+@app.route("/add-entry", methods=["GET", "POST"])
+@roles_required("Admin")
+def add_entry():
+    if request.method == "GET":
+        return render_template("add_entry.html")
+
+    if request.method == "POST":
+        new_entry = entrys(
+        name = request.form["name"],
+        creation_time = datetime.datetime.now(),
+        creation_time_visible = str(datetime.date.today()),
+        author = current_user.username,
+        content = request.form["content"]
+        )
+        db_session.add(new_entry)
+        db_session.commit()
+        flash("Der Eintrag: " + request.form["name"] + " wurde erfolgreich hinzugefügt")
+        return redirect("/add-entry")
+
 # Overview of al Log ins for tracing or overview
 @app.route("/logins", methods=["GET", "POST"])
 @roles_required("Admin")
@@ -260,7 +279,7 @@ def search_results(request, type, spdict, return_url):
         if input["search"] == "":
                 results = db_session.query(entrys).all()
                 total = len(results)
-                if len(entrys.query.all()) > 1:
+                if total > 1:
                     text = " Es wurden " + str(len(entrys.query.all())) + \
                      " Ergebnisse gefunden:"
                 else:
@@ -397,18 +416,6 @@ def user_popup(username):
     user_searched = User.query.filter_by(username=username).first_or_404()
     return render_template("user_popup.html", user=user_searched)
 
-@app.route("/profile", methods=["GET", "POST"])
-@login_required
-def profile_main():
-    if request.method == "GET":
-        return render_template("profile_main.html")
-
-    elif request.method == "POST":
-        type = "specific"
-        spdict = ""
-        return_url = request.referrer or "/"
-        return search_results(request, type, spdict, return_url)
-
 # Makes an search for all terms/ entrys
 @app.route("/all_terms")
 @login_required
@@ -442,7 +449,8 @@ def report():
         description = request.form["description"]
         )
         try:
-            db.add(report)
+            db_session.add(report)
+            db_session.commit()
             flash("Fehler gemeldet")
             return redirect("/")
         except:

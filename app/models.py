@@ -66,8 +66,8 @@ class entrys(db.Model, SearchableMixin):
 	id = db.Column(db.Integer(), primary_key=True, unique=True)
 	author = db.Column(db.String(255))
 	name = db.Column(db.String(150), server_default="")
-	creation_date = db.Column(db.String(20), server_default="")
-	creation_time = db.Column(db.String(), server_default="")
+	creation_time = db.Column(db.DateTime())
+	creation_time_visible = db.Column(db.String())
 	content = db.Column(db.String(), server_default="")
 
 # Define the Term Model with custom SearchableMixin

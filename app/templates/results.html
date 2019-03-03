@@ -17,10 +17,10 @@
           <div class="container">
             <div class="row">
               <div class="col-sm">
-                <h5>{{ result.name }}</h5>
+                {{ result.name }}
               </div>
-              <div class="col-sm">
-                <h5>{{ result.destination_day }}</h5>
+              <div class="row">
+                {{ result.creation_time}}
               </div>
             </div>
             {% if result.author == None %}
@@ -45,23 +45,32 @@
           <hr>
           {% endfor %}
         {% endif %}
-          {% if result_type == "broadcast" %}
-          <thead class="thead-dark">
-            <th scope="col">Name</th>
-            <th scope="col">Ersteller</th>
-            <th scope="col">Ihnalt</th>
-          </thead>
-            {% for result in results %}
-            <tbody>
-              <tr>
-                <td scope="row"> {{ result.name }} </td>
-                <td> <a href="/profile/{{ result.author }}" class="link"> {{ result.author}} </a></td>
-                <td> {{ result.content }} </td>
-              </tr>
-            </tbody>
-            {% endfor %}
-          {% endif %}
-          {% if result_type == "profile" %}
+        {% if result_type == "broadcast" %}
+          {% for result in results %}
+          <div class="container">
+            <div class="row text-secondary">
+                <div class="col font-weight-bold">
+                  {{ result.name }}
+                </div>
+                <div class="col">
+                  {{ result.creation_time_visible }}
+                </div>
+            </div>
+            <div class="row">
+              <div class="col-sm">
+                <small>{{ result.author }}</small>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm">
+                {{ result.content }}
+              </div>
+            </div>
+          </div>
+          <hr>
+          {% endfor %}
+        {% endif %}
+        {% if result_type == "profile" %}
             {% for i in range(len) %}
               <table>
                 <tr valign="top">
@@ -75,6 +84,6 @@
                 </tr>
               </table>
               {% endfor %}
-          {% endif %}
+        {% endif %}
       </table>
 {% endblock %}

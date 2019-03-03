@@ -57,7 +57,6 @@
           Nutzer
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-          <a class="dropdown-item" href="{{ url_for("profile_main") }}"> Info </a>
           <div class="dropdown-item">
             <form class="form-inline my-2 my-lg-0" method="post" action="/">
               <input class="form-control mr-sm-2" type="search" placeholder="Suche" aria-label="Suche" name="search">
@@ -74,24 +73,27 @@
           </li>
         {% endif %}
     </ul>
-    <ul class="navbar-nav navbar-right">
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          Profil
-        </a>
-        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-          <div class="dropdown-item">
-            <a class="nav-link" href="{{ url_for("user.edit_user_profile") }}" >Einstellungen</a>
+    {% if current_user.username is not defined %}
+    {% else %}
+      <ul class="navbar-nav navbar-right">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Profil
+          </a>
+          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+            <div class="dropdown-item">
+              <a class="nav-link" href="{{ url_for("user.edit_user_profile") }}" >Einstellungen</a>
+            </div>
+            <div class="dropdown-item">
+              <a class="nav-link" href="/profile/{{ current_user.username }}" >Info</a>
+            </div>
+            <div class="dropdown-item">
+              <a class="nav-link" href={{ url_for('user.logout') }}>Abmelden</a>
+            </div>
           </div>
-          <div class="dropdown-item">
-            <a class="nav-link" href="/profile/{{ current_user.username }}" >Info</a>
-          </div>
-          <div class="dropdown-item">
-            <a class="nav-link" href={{ url_for('user.logout') }}>Abmelden</a>
-          </div>
-        </div>
-      </li>
-    </ul>
+        </li>
+      </ul>
+    {% endif %}
   </nav>
 
   {% with messages = get_flashed_messages() %}
@@ -106,7 +108,7 @@
       {% endfor %}
     {% endif %}
   {% endwith %}
-  <div class="container" style="margin-top: 10px;" >
+  <div class="container" style="margin-top: 10px; margin-bottom: 10px;" >
   {% block app_content %}{% endblock %}
   </div>
 </div>
@@ -117,7 +119,6 @@
   <span class="text-muted">
   <div class="container">
     <br/>
-    <hr class="no-margins"/>
     <div class="clearfix with-margins">
       <div class="pull-left">{{ config["APP_NAME"] }} {{ config["APP_VERSION"]}}</div>
     </div>
