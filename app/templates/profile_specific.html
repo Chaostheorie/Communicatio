@@ -47,62 +47,19 @@
                               {{ user.description }}
                             {% endif %}
 
-{% block admin_tools %}
-<!-- Admin tools button -->
-                        {% if logged_level == "admin" %}
-                          <div class="dropdown">
-                            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                              Profil bearbeiten
-                          </button>
-                          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <a class="dropdown-item" href="/admin/edit/{{ user.username }}">Profil bearbeiten</a>
-                            <form action="/admin" method="post">
-                              <input type="hidden" id="action" name="action" value="change_name">
-                              <table>
-                                <thead>
-                                  <th>Nutzername: </th>
-                                  <th><input type="text" name="username" placeholder="{{ user.username }}"></th>
-                                </thead>
-                                <thead>
-                                  <th>Vorname: </th>
-                                  <th><input type="text" name="first_name" placeholder="{{ user.first_name }}"></th>
-                                </thead>
-                                <thead>
-                                  <th>Nachname: </th>
-                                  <th><input type="text" name="last_name" placeholder="{{ user.last_name }}"></th>
-                                </thead>
-                                <thead>
-                                  <th></th>
-                                  <th><input class="btn btn-primary" type="submit" value="Senden" style="float: right;"></th>
-                                </thead>
-                              </table>
-                            </form>
-                            <form action="/admin" method="post">
-                              <input type="hidden" name="action" value="delete_profiile">
-                              <input type="hidden" name="username" value="{{ user.username }}">
-                              <input type="submit" value="Profil löschen">
-                            </form>
-                            {% if user.is_active == True %}
-                              <form action="/admin">
-                                <input type="hidden" id="action" name="action" value="set_inactive">
-                                <input type="hidden" name="username" value="{{ user.username }}">
-                              </form>
-                            {% elif user.is_active == False %}
-                              <form action="/admin">
-                                <input type="hidden" id="action" name="action" value="set_active">
-                                <input type="hidden" name="username" value="{{ user.username }}">
-                                <input type="submit" value="Profil aktivieren">
-                              </form>
-                            {% endif %}
-                          </div>
-                        </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+{# this only is visible if you are in the group admin #}
+{% if current_user.logged_level == "admin" %}
+<p>
+  <div class="dropdown">
+  <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    Profil bearbeiten
+  </button>
+    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+      <a class="dropdown-item" href="/admin/edit/{{ user.username }}">Profil bearbeiten</a>
+      <a class="dropdown-item" href="/admin/delete/{{ user.username }}">Profil löschen</a>
+      <a class="dropdown-item" href="/admin/deactivate/{{ user.username }}">Profil archivieren</a>
     </div>
-</div>
-{% endblock %}
+  </div>
+</p>
+{% endif %}
 {% endblock %}

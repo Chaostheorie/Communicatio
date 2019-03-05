@@ -1,10 +1,36 @@
 {% extends "base.html" %}
 {% block app_content %}
 <p>
-This is the Start page. Here you can go and send post requests. The main page is
-normaly the content page with a short introduction to the visitor and a
-presentation of the site content or something like this.
+Das hier ist ein toller Kasten für Informationen über die Schule der diese Website gehört. <br>
+Der Kasten stellt am besten die Ziele der Schule sowie ihre Ausrichtung da.<br>
+Auch können Vorteile der Schule sowie Informationen über die Geschichte gegeben werden. <br>
 </p>
+
+{% if entrys is defined %}
+  {% for entry in entrys %}
+    <div class="container">
+      <div class="row text-secondary">
+        <div class="col font-weight-bold">
+          {{ result.name }}
+        </div>
+        <div class="col">
+          {{ result.creation_time_visible }}
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm">
+          <small>{{ result.author }}</small>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm">
+          {{ result.content }}
+        </div>
+      </div>
+    </div>
+    <hr>
+  {% endfor %}
+{% endif %}
 {% if text is defined %}
 <hr>
 <p>

@@ -7,6 +7,7 @@ class Config(object):
     # App infos
     APP_VERSION = "Beta 0.0.2"
     APP_NAME = "Communicatio"
+    APP_LOCAL = "de"
 
     # Secret key for sessions of flask users
     # change it before using in anything that could be attacked

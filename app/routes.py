@@ -487,7 +487,13 @@ if app.config["TRACE_LOGIN"] == True:
 # Use 500 errorhandler for security, is ignored if debugging = True
 @app.errorhandler(500)
 def internal_server_error(e):
-    flash("Serverfehler")
+    error = Errors(
+        ip = request.remote_addr,
+        error = str(e),
+        time = datetime.datetime.now()
+        )
+    db_session.add(error)
+    db_session.commit()
     return redirect("/")
 
 # For custom 403/ 404 page replace the error.html and remove unused Variables

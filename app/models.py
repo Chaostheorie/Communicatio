@@ -101,5 +101,13 @@ class reports(db.Model, SearchableMixin):
 	description = db.Column(db.String(app.config["REPORT_DESC_MAX_LEN"]))
 	sender = db.Column(db.String(int(app.config["USER_USERNAME_MAX_LEN"])))
 
+class Errors(db.Model, SearchableMixin):
+		__tablename__ = "errors"
+		__searchable__ = ["ip", "time", "error"]
+		id = db.Column(db.Integer(), primary_key=True)
+		time = db.Column(db.DateTime())
+		ip = db.Column(db.String())
+		error = db.Column(db.String())
+
 # init of tabels
 db.create_all()
